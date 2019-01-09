@@ -28,12 +28,28 @@
 * 可以添加其他计算机非课程资源, 欢迎大家的参与与贡献 (。・∀・)ノ
 
 # [资料下载](https://mbinary.coding.me/ustc-cs/)
+## FTP
+1. FTP/FTPS:
+   - 地址：ftp.ustclug.org；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - 用户名：ftp；
+   - 密码：ftp；
+2. SFTP (Secure File Transfer Protocol):
+   - 地址：ftp.ustclug.org；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - 用户名：ftp；
+   - 密码：ftp；
+3. AFP (Apple Filing Protocol)
+   - 地址：afp://ftp.ustclug.org/；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - Connect As Guest
+## HTTPS
+1. github 网页
+2. 浏览[这里的网页](https://mbinary.coding.me/ustc-cs/). 后者可 以解决 github 的如下不好体验
+   * 如果想下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行), 而在文件浏览版只需要一次即可下载
+   * 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
-大家可以在 github 浏览下面的目录, 也可以通过浏览[这里的网页](https://mbinary.coding.me/ustc-cs/)下载资料. 后者可 以解决 github 的如下不好体验
-
-* 慢
-* 如果想下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行), 而在文件浏览版只需要一次即可下载
-* 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
+FTP 下载是最方便, 快速的, 还可以下载整个目录
 
 # [贡献者们](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
 
