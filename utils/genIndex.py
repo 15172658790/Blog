@@ -1,4 +1,4 @@
-# coding: utf-8
+#coding: utf-8
 import os
 import markdown
 import shutil
@@ -77,7 +77,7 @@ def genIndex(path,dirs,files,htmlTemp = HTML):
     if 'README.md' in files:
         with open(os.path.join(path,'README.md'),'r',errors='ignore') as f :
             #<hr>\n<span style="color:orange;text-align:center;">Read  Me</span>\n<hr>\n
-            md = '\n<h1 style="color:red;text-align:center;" >Read Me</h1>\n'+f.read()
+            md = '\n<h1 style="color:red;text-align:center;">Read Me</h1>\n'+f.read()
     cur = getPath(path)
     dirLst = genDirectoryList(path,dirs)
     fileLst = genFileList(path,files)
@@ -99,7 +99,7 @@ def getPath(path):
         url='../'+url
     return '/'.join(res[::-1])
 
-LIITEM = '<li><a href="{path}" ><i class="fa fa-{icon}"></i>&nbsp;{name}</a></li>'
+LIITEM = '<li><a href="{path}"><i class="fa fa-{icon}"></i>&nbsp;{name}</a></li>'
 def genFileList(path,files):
     keys=[i for i in files if i[0]!='.']
     link= {i:os.path.join(path,i) for i in keys}

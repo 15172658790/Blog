@@ -15,7 +15,8 @@ WALKDIR = os.path.abspath('.')
 TARDIR = '/mnt/d/blogfile/blog/source/ustc-cs'
 if not os.path.exists(TARDIR):
     TARDIR = 'docs'
-IGNORE = ['utils','docs']
+
+IGNORE = ['utils','docs','__pycache__']
 
 HTML = '''
 
@@ -67,32 +68,47 @@ README=r'''
 * [贡献者们](#贡献者们)
 * [课程结构](#课程结构)
 * [课程目录](#课程目录)
-* [管理投稿](#管理投稿)
+* [贡献投稿](#贡献投稿)
     * [投稿方式](#投稿方式)
         * [帮忙上传](#帮忙上传)
         * [网页操作](#网页操作)
         * [用命令行](#用命令行)
     * [投稿建议](#投稿建议)
-    * [管理工作](#管理工作)
 * [版权声明](#版权声明)
 
 <!-- vim-markdown-toc -->
 
 # 公告
-* 欢迎 star,fork. 欢迎反馈与建议（通过 [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new),<a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>, 或者 [qq](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
+* 欢迎 star,fork. 欢迎反馈与建议（通过 [issue](issues/new),<a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>, 或者 [qq](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
 * 可以通过在此页面搜索课程名快速定位,下面的课程目录是经过**拼音排序**过的,方便查找
 * 可以添加其他计算机非课程资源, 欢迎大家的参与与贡献 (。・∀・)ノ
 
-# [资料下载](https://mbinary.coding.me/ustc-cs/)
+# 资料下载
+## FTP
+1. FTP/FTPS:
+   - 地址：ftp.ustclug.org；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - 用户名：ftp；
+   - 密码：ftp；
+2. SFTP (Secure File Transfer Protocol):
+   - 地址：ftp.ustclug.org；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - 用户名：ftp；
+   - 密码：ftp；
+3. AFP (Apple Filing Protocol)
+   - 地址：afp://ftp.ustclug.org/；
+   - 路径：/ebook/USTC-CS-Courses-Resource；
+   - Connect As Guest
 
-大家可以在 github 浏览下面的目录, 也可以通过浏览[这里的网页](https://mbinary.coding.me/ustc-cs/)下载资料. 后者可 以解决 github 的如下不好体验
+## HTTPS
+- github 网页
+- [脚本生成的网页](https://mbinary.coding.me/ustc-cs/)
 
-* 慢
-* 如果想下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行), 而在文件浏览版只需要一次即可下载
-* 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
+脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
-# [贡献者们](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
+FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低于网页
 
+# [贡献者们](graphs/contributors)
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
@@ -136,13 +152,13 @@ README=r'''
 
 {index}
 
-# 管理投稿
+# 贡献投稿
 欢迎大家的参与与贡献
 
 ## 投稿方式
 
 ### 帮忙上传
-可以发给我或者其他同学帮忙上传
+可以发给我或者其他同学帮忙上传, 或者提 issue
 
 ### 网页操作
 * 用网页或者[桌面版](https://desktop.github.com/)直接操作，fork and pull request, 
@@ -178,16 +194,9 @@ git merge upstream/master
 ```
 
 ## 投稿建议
-* 由于 github 上不能直接上传大于 100mb 的文件，所以就不要上传太大的文件。可以存在云盘，然后将云盘链接发在这里。
+* github 上不能直接上传大于 100mb 的文件. 对于超过 100 mb 的文件, 可以存在云盘，然后将链接写在[这里](网盘资源/README.md)
 * 若是自己原创的作品，可以在文件名后加上后缀，如`-16- 计 - 王小二`, 文件里也可以写上联系方式，当然不写也行。
-
-## 管理工作
-若想帮忙管理 (collaborator), 请联系我, 非常感谢你的参与与贡献
-
-* 帮忙上传文件
-* 检查一些文件是否合适，比如删除作业代码，（欢迎非作业代码）
-* 将各种资源分好类，放在对应的目录中, 修改一些不整齐的名字((。・∀・)ノ,强迫症早期)
-* 注意资源大多是二进制文件, 多次改动会使git重新上传, 即使mv, 也会使本地仓库重新上传到远程仓库,所以在没有必要的情况下, 不要对二进制文件做任何改动.
+* 注意资源大多是二进制文件, 多次改动会使 git 重新上传, 即使 `mv`, 也会使本地仓库重新上传到远程仓库,所以在没有必要的情况下, 不要对二进制文件做任何改动.
 
 
 

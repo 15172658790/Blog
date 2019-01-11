@@ -7,9 +7,9 @@ python3 utils/checkBigFile.py
 echo "generating readme"
 python3 utils/genReadme.py  -p . -d 2  
 
-echo "git add ..."
-git add *
-
 echo "generating index html files..."
 python3 utils/genIndex.py
+
+echo "git add ..."
+git add *
 
