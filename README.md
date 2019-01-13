@@ -22,7 +22,7 @@
 <!-- vim-markdown-toc -->
 
 # 公告
-* 欢迎 star,fork. 欢迎反馈与建议（通过 [issue](issues/new),<a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>, 或者 [qq](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
+* 欢迎 star,fork. 欢迎反馈与建议（通过 [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new),<a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>, 或者 [qq](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
 * 可以通过在此页面搜索课程名快速定位,下面的课程目录是经过**拼音排序**过的,方便查找
 * 可以添加其他计算机非课程资源, 欢迎大家的参与与贡献 (。・∀・)ノ
 
@@ -44,14 +44,14 @@
    - Connect As Guest
 
 ## HTTPS
-- github 网页
+- [github 网页](#课程目录)
 - [脚本生成的网页](https://mbinary.coding.me/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
 FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低于网页
 
-# [贡献者们](graphs/contributors)
+# [贡献者们](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
@@ -131,6 +131,8 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
         * [密码学](./计算机与信息类/密码学)
         * [模拟与数字电路](./计算机与信息类/模拟与数字电路)
         * [python](./计算机与信息类/python)
+        * [人工智能基础](./计算机与信息类/人工智能基础)
+        * [软件工程](./计算机与信息类/软件工程)
         * [scheme](./计算机与信息类/scheme)
         * [数电实验](./计算机与信息类/数电实验)
         * [数据结构](./计算机与信息类/数据结构)
