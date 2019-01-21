@@ -111,40 +111,61 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
-* slides: 主要是 ppt 文件类型（若有多个老师，则在课程目录建立slides-teacherName1, slides-teacherName2...）
-* homework & lab（一个或两个目录）
-* 教材与参考书可以直接放在课程目录下
-* 课程主页及其他链接资源（记在 课程/README.md 中)
-* 心得与经验
+
+* 教材, 答案在课程目录下
+* 参考书, 参考资料在 reference 下
+* 复习试卷, 习题课, 作业解答 在 review 下
+* homework-teacher1, homework-teacher2 ..., lab-teacher1, ...
+* 课程主页及其他链接资源记在 README.md 中
+* slides: 主要是 ppt 文件类型, **将所有 slides** 打包成 zip, 放在 课程目录下（若有多个老师，则在课程目录建立slides-teacherName1.zip, slides-teacherName2.zip...）
 * students（同学们上传的自己的一些资料,作品，每个同学新建一个目录)
 * 非zip, 非以'.'开头的文件多于 3 个的目录下都有个 zip 文件：`-DIRECTORY 目录下的\d+个文件.zip`,包含当前目录下的一些文件, 这样方便大家一键下载. (在 git commit前, 运行 `./before__commit.sh`可以自动生成)
 
-如`数据结构`课程
 
+如 编译原理和技术 课程
 ```
-├ lab
-│   ├ bankSimulation
-│   ├ huffman
-│   ├ navigation
-│   ├ polynomial
-│   └ README.md
-├ slides
-│   ├ ch10-排序.ppt
-│   ├ ch1-绪论.ppt
-│   ├ ch2-线性表.ppt
-│   ├ ch3.ppt
-│   ├ ch6.pps
-│   ├ ch7.pps
-│   ├ ch9.pps
-│   ├ 数据结构c语言版严蔚敏PPT.ppt
-│   └ -计算机与信息类-数据结构-slides目录下的8个文件.zip
-├ students
-│   ├ mbinary
-│   └ README.md
-├ 数据结构c_严蔚敏.pdf
-└ 数据结构习题集答案(C语言版严蔚敏)_ca332.pdf
+├ lab-张昱
+│   ├ c1interpreter
+│   ├ c1recognizer
+│   ├ Homework
+│   ├ lab-1-2-answer
+│   ├ lab2
+│   ├ sa
+│   └ teamwork
+├ lab-李诚
+│   ├ lab-1
+│   ├ lab-2
+│   ├ lab-3
+│   ├ lab-4
+│   ├ pre
+│   ├ README.md
+│   └ Server_Guide.pdf
+├ lab-郑启龙
+│   ├ lab1-declarationParser
+│   └ lab2-pl0
+├ README.md
+├ reference
+│   ├ 201801CompilerPractice.pdf
+│   ├ Programming_Language_Pragmatics(b-ok.xyz).pdf
+│   ├ The garbage collection handbook  the art of automatic memory management.PDF
+│   ├ 垃圾回收的算法与实现---文字版.pdf
+│   ├ 程序设计语言实践之路_d98f6.pdf
+│   ├ 编译原理术语中英文对照表.pdf
+│   └ 高级编译器设计与实现(虎书).pdf
+├ review
+│   ├ 2014期末试卷.pdf
+│   ├ 2017习题课-张昱.pdf
+│   ├ 2018-final-review.pdf
+│   ├ 2018习题课-李诚.pdf
+│   ├ 2018习题课-郑启龙.pdf
+│   ├ 2018期中考试试题与参考答案.pdf
+│   └ ex_on_PL0.pdf
+├ slides-张昱.zip
+├ slides-李诚.zip
+├ slides-郑启龙.zip
+├ 编译原理_第二版_(陈意云_著)_高等教育出版社_课后答案(完善版).pdf
+└ 编译原理 陈意云 第3版.pdf
 ```
-
 
 # 课程目录
 **根据拼音字母排序**
