@@ -45,7 +45,7 @@
 
 ## HTTPS
 - [github 网页](#课程目录)
-- [脚本生成的网页](https://mbinary.github.io/ustc-cs/)
+- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
@@ -142,7 +142,9 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
         * [julia](./计算机与信息类/julia)
         * [密码学](./计算机与信息类/密码学)
         * [模拟与数字电路](./计算机与信息类/模拟与数字电路)
+        * [脑与认知科学导论](./计算机与信息类/脑与认知科学导论)
         * [python](./计算机与信息类/python)
+        * [人工智能导论](./计算机与信息类/人工智能导论)
         * [人工智能基础](./计算机与信息类/人工智能基础)
         * [软件工程](./计算机与信息类/软件工程)
         * [scheme](./计算机与信息类/scheme)
@@ -191,7 +193,7 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
    操作方式可以参考 [这里](https://blog.csdn.net/qq_29277155/article/details/51048990)和[这里](https://blog.csdn.net/zhangw0_0/article/details/50667891) ,[介绍pr操作](https://blog.csdn.net/huutu/article/details/51018317)
 
 ### 用命令行
-对于用命令行的同学,提醒一下这个仓库很大（2018-5-2时已有 3G左右）
+对于用命令行的同学,提醒一下这个仓库很大（2019-1-25 时已有 7G 左右）
 所以如果直接 clone 很慢。
 可以使用 sparse-checkout, 只下载你指定的目录
 

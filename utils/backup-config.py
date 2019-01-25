@@ -101,7 +101,7 @@ README=r'''
 
 ## HTTPS
 - github 网页
-- [脚本生成的网页](https://mbinary.github.io/ustc-cs/)
+- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
