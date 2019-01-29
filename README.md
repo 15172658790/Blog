@@ -63,7 +63,6 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
 * 课程主页及其他链接资源记在 README.md 中
 * slides: 主要是 ppt 文件类型, **将所有 slides** 打包成 zip, 放在 课程目录下（若有多个老师，则在课程目录建立slides-teacherName1.zip, slides-teacherName2.zip...）
 * students（同学们上传的自己的一些资料,作品，每个同学新建一个目录)
-* 非zip, 非以'.'开头的文件多于 3 个的目录下都有个 zip 文件：`-DIRECTORY 目录下的\d+个文件.zip`,包含当前目录下的一些文件, 这样方便大家一键下载. (在 git commit前, 运行 `./before__commit.sh`可以自动生成)
 
 
 如 编译原理和技术 课程

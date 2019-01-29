@@ -1,5 +1,5 @@
-echo "generating zip files..."
-python3 utils/genZipFile.py #-r 
+#echo "generating zip files..."
+#python3 utils/genZipFile.py #-r 
 
 echo "checking big files(>100M) and removing them..."
 python3 utils/checkBigFile.py 
