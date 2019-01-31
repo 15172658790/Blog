@@ -1,5 +1,11 @@
 
 # 中国科学技术大学课程资源
+[![Stars](https://img.shields.io/github/stars/mbinary/USTC-CS-Courses-Resource.svg?label=Stars&style=social)](https://github.com/mbinary/USTC-CS-Courses-Resource/stargazers)
+[![Forks](https://img.shields.io/github/forks/mbinary/USTC-CS-Courses-Resource.svg?label=Fork&style=social)](https://github.com/mbinary/USTC-CS-Courses-Resource/network/members)
+[![repo-size](https://img.shields.io/github/repo-size/mbinary/USTC-CS-Courses-Resource.svg)]()
+[![Contributors](https://img.shields.io/github/contributors/mbinary/USTC-CS-Courses-Resource.svg)](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
+[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 >这是一个收集 中国科学技术大学课程资源的（主要是计算机学院的,也有其他课程,公选课,自由选修等）的 repo, 包括课程电子版 书籍，参考书，slides(ppt), 考试试卷，学习心得，某些书的答案。
 
 
@@ -8,7 +14,6 @@
 
 * [公告](#公告)
 * [资料下载](#资料下载)
-* [贡献者们](#贡献者们)
 * [课程结构](#课程结构)
 * [课程目录](#课程目录)
 * [贡献投稿](#贡献投稿)
@@ -17,7 +22,6 @@
         * [网页操作](#网页操作)
         * [用命令行](#用命令行)
     * [投稿建议](#投稿建议)
-* [版权声明](#版权声明)
 
 <!-- vim-markdown-toc -->
 
@@ -51,7 +55,6 @@
 
 FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低于网页
 
-# [贡献者们](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
@@ -225,8 +228,3 @@ git merge upstream/master
 * 若是自己原创的作品，可以在文件名后加上后缀，如`-16- 计 - 王小二`, 文件里也可以写上联系方式，当然不写也行。
 * 注意资源大多是二进制文件, 多次改动会使 git 重新上传, 即使 `mv`, 也会使本地仓库重新上传到远程仓库,所以在没有必要的情况下, 不要对二进制文件做任何改动.
 
-
-
-# 版权声明
-所有资源，著作权归原作者所有，此 repo 的目的是**学习交流**.
-如果使用者的不当使用造成不良后果，与此 repo 的贡献者无关。
