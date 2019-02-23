@@ -60,6 +60,7 @@ def handleDir(target):
     n = len(target)
     gen = os.walk(target)
     for path,dirs,files in gen:
+        dirs = [d for d in dirs if d not in IGNORE]
         dirs = pinyinSort(dirs)
         files = pinyinSort(files)
         path = path[n:].strip(os.path.sep)

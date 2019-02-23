@@ -47,14 +47,15 @@
    - 路径：/ebook/USTC-CS-Courses-Resource；
    - Connect As Guest
 
+感谢 @USTC-LUG, @[volltin](https://github.com/volltin), @[zzh1996](https://github.com/zzh1996)
+
 ## HTTPS
 - [github 网页](#课程目录)
 - [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
-FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低于网页
-
+FTP 更快, 可以下载整个目录, 是最好的选择
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
@@ -62,7 +63,7 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
 * 教材, 答案在课程目录下
 * 参考书, 参考资料在 reference 下
 * 复习试卷, 习题课, 作业解答 在 review 下
-* homework-teacher1, homework-teacher2 ..., lab-teacher1, ...
+* 建立文件夹 homework-teacher1, homework-teacher2 ..., lab-teacher1, 每个文件夹中如果有不同年份的, 就再建立不同年份的文件夹
 * 课程主页及其他链接资源记在 README.md 中
 * slides: 主要是 ppt 文件类型, **将所有 slides** 打包成 zip, 放在 课程目录下（若有多个老师，则在课程目录建立slides-teacherName1.zip, slides-teacherName2.zip...）
 * students（同学们上传的自己的一些资料,作品，每个同学新建一个目录)
@@ -175,6 +176,7 @@ FTP 更快, 可以下载整个目录, 是最好的选择, 只是更新频率低�
     * [utils](./utils)
     * [网盘资源](./网盘资源)
     * [物理类](./物理类)
+        * [大学物理实验](./物理类/大学物理实验)
         * [电磁学](./物理类/电磁学)
         * [光学与原子物理](./物理类/光学与原子物理)
 
