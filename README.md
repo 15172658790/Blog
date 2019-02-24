@@ -28,7 +28,7 @@
 # 版权问题
 我们总体上采用 [Creative Commons BY-NC-SA 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/)![](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png), 同时遵守具体的某个创作的协议. 如有冲突, 以作品本本身的协议为准.
 
-- 对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权.
+- 对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权(目前仍在联系老师征询授权).
 - 对于 电子书, 我们坚决抵制盗版, 只会保留可以公开分享的资源.
 
 
@@ -62,10 +62,9 @@
 ## HTTPS
 - [github 网页](#课程目录)
 - [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
+- [gitzip下载工具](https://kinolien.github.io/gitzip)
 
-脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
-
-FTP 更快, 可以下载整个目录, 是最好的选择
+FTP 快速, 可以下载整个目录, 是最好的选择, gitzip 可以打包下载(方法是输入github repo 中的文件夹地址), 脚本生成的网页浏览起来更快, 会有更多信息, 比如文件大小等
 
 # 课程结构
 每门课程大致结构如下，有些栏目可能没有，也可以自己添加认为合理的栏目
