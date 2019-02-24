@@ -26,19 +26,19 @@
 
 <!-- vim-markdown-toc -->
 # 版权问题
-我们总体上采用 [Creative Commons BY-NC-SA 4.0 International License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/), 同时遵守具体的某个创作的协议. 如有冲突, 以作品本本身的协议为准.
+我们总体上采用 [Creative Commons BY-NC-SA 4.0 International License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)![](http://creativecommons.org/licenses/by-nc-sa/4.0/), 同时遵守具体的某个创作的协议. 如有冲突, 以作品本本身的协议为准.
 
-对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权.
-对于 电子书, 我们坚决抵制盗版, 只会保留可以公开分享的资源.
+- 对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权.
+- 对于 电子书, 我们坚决抵制盗版, 只会保留可以公开分享的资源.
 
 
-对于贡献者, 请遵守如上约定, 尊重创作者的劳动成果, 有来源的需要注明资源的来源(原创者, 网址等等).
-对于创作者, 如果我们遗漏了你的授权(有些资源无法找到来源)或者损害了你的权益, 对此感到抱歉, 请联系我们协商或者删除.
+- 对于贡献者, 请遵守如上约定, 尊重创作者的劳动成果, 有来源的需要注明资源的来源(原创者, 网址等等).
+- 对于创作者, 如果我们遗漏了你的授权(有些资源无法找到来源)或者损害了你的权益, 对此感到抱歉, 请联系我们协商或者删除.
 
 # 反馈方式:
 - [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new)
-- [QQ](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
-- <a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>
+- <a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">email</a>
+- [QQ](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes)
 
 # 资料下载
 ## FTP
@@ -61,7 +61,7 @@
 
 ## HTTPS
 - [github 网页](#课程目录)
-;- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
+- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
@@ -82,13 +82,7 @@ FTP 更快, 可以下载整个目录, 是最好的选择
 如 编译原理和技术 课程
 ```
 ├ lab-张昱
-│   ├ c1interpreter
-│   ├ c1recognizer
-│   ├ Homework
-│   ├ lab-1-2-answer
-│   ├ lab2
-│   ├ sa
-│   └ teamwork
+│   └ 2017
 ├ lab-李诚
 │   ├ lab-1
 │   ├ lab-2
@@ -105,10 +99,9 @@ FTP 更快, 可以下载整个目录, 是最好的选择
 │   ├ Programming_Language_Pragmatics(b-ok.xyz).pdf
 │   ├ The garbage collection handbook  the art of automatic memory management.PDF
 │   ├ 垃圾回收的算法与实现---文字版.pdf
-│   ├ 程序设计语言实践之路_d98f6.pdf
-│   ├ 编译原理术语中英文对照表.pdf
-│   └ 高级编译器设计与实现(虎书).pdf
+│   └ 编译原理术语中英文对照表.pdf
 ├ review
+│   ├ 2010作业答案.pdf
 │   ├ 2014期末试卷.pdf
 │   ├ 2017习题课-张昱.pdf
 │   ├ 2018-final-review.pdf
@@ -118,11 +111,8 @@ FTP 更快, 可以下载整个目录, 是最好的选择
 │   └ ex_on_PL0.pdf
 ├ slides-张昱.zip
 ├ slides-李诚.zip
-├ slides-郑启龙.zip
-├ 编译原理_第二版_(陈意云_著)_高等教育出版社_课后答案(完善版).pdf
-└ 编译原理 陈意云 第3版.pdf
+└ slides-郑启龙.zip
 ```
-
 # 课程目录
 **根据拼音字母排序**, 可以通过在此页面搜索课程名快速定位.
 
