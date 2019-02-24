@@ -70,7 +70,8 @@ README=r'''
 # 目录
 <!-- vim-markdown-toc GFM -->
 
-* [公告](#公告)
+* [版权问题](#版权问题)
+* [反馈方式](#反馈方式)
 * [资料下载](#资料下载)
 * [课程结构](#课程结构)
 * [课程目录](#课程目录)
@@ -82,11 +83,20 @@ README=r'''
     * [投稿建议](#投稿建议)
 
 <!-- vim-markdown-toc -->
+# 版权问题
+我们总体上采用 [Creative Commons BY-NC-SA 4.0 International License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/), 同时遵守具体的某个创作的协议. 如有冲突, 以作品本本身的协议为准.
 
-# 公告
-* 欢迎 star,fork. 欢迎反馈与建议（通过 [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new),<a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>, 或者 [qq](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
-* 可以通过在此页面搜索课程名快速定位,下面的课程目录是经过**拼音排序**过的,方便查找
-* 可以添加其他计算机非课程资源, 欢迎大家的参与与贡献 (。・∀・)ノ
+对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权.
+对于 电子书, 我们坚决抵制盗版, 只会保留可以公开分享的资源.
+
+
+对于贡献者, 请遵守如上约定, 尊重创作者的劳动成果, 有来源的需要注明资源的来源(原创者, 网址等等).
+对于创作者, 如果我们遗漏了你的授权(有些资源无法找到来源)或者损害了你的权益, 对此感到抱歉, 请联系我们协商或者删除.
+
+# 反馈方式:
+- [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new)
+- [QQ](http://wpa.qq.com/msgrd?v=3&uin=414313516&site=qq&menu=yes))
+- <a href="mailto:&#122;huheqin1@gmail.com?subject=%E5%8F%8D%E9%A6%88%E4%B8%8E%E5%BB%BA%E8%AE%AE">mail</a>
 
 # 资料下载
 ## FTP
@@ -109,7 +119,7 @@ README=r'''
 
 ## HTTPS
 - [github 网页](#课程目录)
-- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
+;- [脚本生成的网页](https://mbinary.xyz/ustc-cs/)
 
 脚本生成的网页中直接包含了下载链接, 比 github 方便一点. 而且在移动端下载二进制文件, 在github 需要点击两次(第一次显示`This file is binary and cannot be displayed inline`,需要再点`open binary file`/`Download`才行),后者只需要一次即可下载, 对于大的二进制文件, github 移动端的不能直接下载, 需要切换成 `Desktop Version` 才有 下载按钮.
 
@@ -150,7 +160,6 @@ FTP 更快, 可以下载整个目录, 是最好的选择
 │   └ lab2-pl0
 ├ README.md
 ├ reference
-│   ├ 201801CompilerPractice.pdf
 │   ├ Programming_Language_Pragmatics(b-ok.xyz).pdf
 │   ├ The garbage collection handbook  the art of automatic memory management.PDF
 │   ├ 垃圾回收的算法与实现---文字版.pdf
@@ -173,12 +182,12 @@ FTP 更快, 可以下载整个目录, 是最好的选择
 ```
 
 # 课程目录
-**根据拼音字母排序**
+**根据拼音字母排序**, 可以通过在此页面搜索课程名快速定位.
 
 {index}
 
 # 贡献投稿
-欢迎大家的参与与贡献
+欢迎大家的参与与贡献, 投稿的时候注意[版权问题](#版权问题)
 
 ## 投稿方式
 
@@ -222,5 +231,4 @@ git merge upstream/master
 * github 上不能直接上传大于 100mb 的文件. 对于超过 100 mb 的文件, 可以存在云盘，然后将链接写在[这里](网盘资源/README.md)
 * 若是自己原创的作品，可以在文件名后加上后缀，如`-16- 计 - 王小二`, 文件里也可以写上联系方式，当然不写也行。
 * 注意资源大多是二进制文件, 文件内容的改动会使 git 重新上传. 所以在没有必要的情况下, 不要对二进制文件做任何内容上的改动.
-
 '''
