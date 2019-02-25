@@ -4,7 +4,7 @@
 [![Forks](https://img.shields.io/github/forks/mbinary/USTC-CS-Courses-Resource.svg?label=Fork&style=social)](https://github.com/mbinary/USTC-CS-Courses-Resource/network/members)
 [![repo-size](https://img.shields.io/github/repo-size/mbinary/USTC-CS-Courses-Resource.svg)]()
 [![Contributors](https://img.shields.io/github/contributors/mbinary/USTC-CS-Courses-Resource.svg)](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
-[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 >本仓库收录中国科学技术大学众多课程资源，包括电子版教材、参考书、讲义、试卷、学习心得、习题解答等。以计算机学院课程为主，也包含公选课、自由选修等其他课程。
 
@@ -16,13 +16,12 @@
 * [反馈方式](#反馈方式)
 * [资料下载](#资料下载)
 * [课程结构](#课程结构)
+* [课程关系](#课程关系)
 * [课程目录](#课程目录)
 * [贡献投稿](#贡献投稿)
-    * [投稿方式](#投稿方式)
-        * [帮忙上传](#帮忙上传)
-        * [网页操作](#网页操作)
-        * [用命令行](#用命令行)
-    * [投稿建议](#投稿建议)
+    * [帮忙上传](#帮忙上传)
+    * [网页操作](#网页操作)
+    * [用命令行](#用命令行)
 
 <!-- vim-markdown-toc -->
 # 版权说明
@@ -58,7 +57,8 @@
    - 路径：/ebook/USTC-CS-Courses-Resource；
    - Connect As Guest
 
-感谢 @USTC-LUG, @[zzh1996](https://github.com/zzh1996), @[volltin](https://github.com/volltin) 
+感谢 @USTC-LUG, @[zzh1996](https://github.com/zzh1996), @[volltin](https://github.com/volltin)
+
 
 ## HTTPS
 - [github 网页](#课程目录)
@@ -82,37 +82,20 @@ FTP 快速，可以下载整个目录，是最好的选择，gitzip 可以打包
 如 编译原理和技术 课程
 ```
 ├ lab- 张昱
-│   └ 2017
 ├ lab- 李诚
-│   ├ lab-1
-│   ├ lab-2
-│   ├ lab-3
-│   ├ lab-4
-│   ├ pre
-│   ├ README.md
-│   └ Server_Guide.pdf
 ├ lab- 郑启龙
-│   ├ lab1-declarationParser
-│   └ lab2-pl0
 ├ README.md
 ├ reference
-│   ├ Programming_Language_Pragmatics(b-ok.xyz).pdf
-│   ├ The garbage collection handbook  the art of automatic memory management.PDF
-│   ├ 垃圾回收的算法与实现 --- 文字版.pdf
-│   └ 编译原理术语中英文对照表.pdf
 ├ review
-│   ├ 2010 作业答案.pdf
-│   ├ 2014 期末试卷.pdf
-│   ├ 2017 习题课 - 张昱.pdf
-│   ├ 2018-final-review.pdf
-│   ├ 2018 习题课 - 李诚.pdf
-│   ├ 2018 习题课 - 郑启龙.pdf
-│   ├ 2018 期中考试试题与参考答案.pdf
-│   └ ex_on_PL0.pdf
-├ slides- 张昱.zip
-├ slides- 李诚.zip
-└ slides- 郑启龙.zip
+├ slides- 张昱
+├ slides- 李诚
+└ slides- 郑启龙
 ```
+# 课程关系
+![](https://user-images.githubusercontent.com/29198767/53245024-851b1280-36e7-11e9-9d22-7ee65446c68a.png)
+
+更多信息可以下载[官网的培养方案](https://www.teach.ustc.edu.cn/education/241.html/attachment/14-215%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AD%A6%E9%99%A2-2013)
+
 # 课程目录
 **根据拼音字母排序**, 可以通过在此页面搜索课程名快速定位。
 
@@ -173,9 +156,12 @@ FTP 快速，可以下载整个目录，是最好的选择，gitzip 可以打包
         * [光学与原子物理](./物理类/光学与原子物理)
 
 # 贡献投稿
-欢迎大家的参与与贡献，投稿的时候注意[版权说明](#版权说明)
+欢迎大家的参与与贡献^_^
+投稿的时候注意
 
-## 投稿方式
+* [版权说明](#版权说明)
+* github 上不能直接上传大于 100mb 的文件。对于超过 100 mb 的文件，可以存在网盘，然后在 README 文件中贴上链接
+* 文件内容的改动会使 git 重新上传, 在没有必要的情况下, 不要对二进制文件做任何更改.
 
 ### 帮忙上传
 可以发给我或者其他同学帮忙上传，或者提 issue
@@ -213,6 +199,3 @@ git fetch upstream/master
 git merge upstream/master
 ```
 
-## 投稿建议
-* github 上不能直接上传大于 100mb 的文件。对于超过 100 mb 的文件，可以存在网盘，然后在 README 文件中贴上链接
-* 文件内容的改动会使 git 重新上传, 在没有必要的情况下, 不要对二进制文件做任何更改.
