@@ -6,13 +6,13 @@
 [![Contributors](https://img.shields.io/github/contributors/mbinary/USTC-CS-Courses-Resource.svg)](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
 [![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
->这是一个收集 中国科学技术大学课程资源的（主要是计算机学院的,也有其他课程,公选课,自由选修等）的 repo, 包括课程电子版 书籍，参考书，slides(ppt), 考试试卷，学习心得，某些书的答案。
+>本仓库收录中国科学技术大学众多课程资源，包括电子版教材、参考书、讲义、试卷、学习心得、习题解答等。以计算机学院课程为主，也包含公选课、自由选修等其他课程。
 
 
 # 目录
 <!-- vim-markdown-toc GFM -->
 
-* [版权问题](#版权问题)
+* [版权说明](#版权说明)
 * [反馈方式](#反馈方式)
 * [资料下载](#资料下载)
 * [课程结构](#课程结构)
@@ -25,15 +25,16 @@
     * [投稿建议](#投稿建议)
 
 <!-- vim-markdown-toc -->
-# 版权问题
-我们总体上采用 [Creative Commons BY-NC-SA 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/)![](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png), 同时遵守具体的某个创作的协议. 如有冲突, 以作品本本身的协议为准.
+# 版权说明
+本仓库分享资料遵守其创作者之规定。
 
-- 对于 讲义, 试卷, 作业, 实验等内容, 我们会保证这里的资源得到所有原创者的授权(目前仍在联系老师征询授权).
-- 对于 电子书, 我们坚决抵制盗版, 只会保留可以公开分享的资源.
+对无特别声明的资料，谨以[知识共享署名-非商业性使用-相同方式共享4.0国际许可协议](http://creativecommons.org/licenses/by-nc-sa/4.0/)授权。![](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png)
 
+抵制盗版，人人有责。我们正在征询任课教师许可分享讲义、试卷、作业、实验等内容，仅分享合法资料。
 
-- 对于贡献者, 请遵守如上约定, 尊重创作者的劳动成果, 有来源的需要注明资源的来源(原创者, 网址等等).
-- 对于创作者, 如果我们遗漏了你的授权(有些资源无法找到来源)或者损害了你的权益, 对此感到抱歉, 请联系我们协商或者删除.
+请贡献者遵守版权规定，尊重原创劳动，注明资料来源；
+
+请创作者及公众监督，如有资料违反许可协议，请告知我们改正错误。
 
 # 反馈方式
 - [issue](https://github.com/mbinary/USTC-CS-Courses-Resource/issues/new)
@@ -173,7 +174,7 @@ FTP 快速, 可以下载整个目录, 是最好的选择, gitzip 可以打包下
         * [光学与原子物理](./物理类/光学与原子物理)
 
 # 贡献投稿
-欢迎大家的参与与贡献, 投稿的时候注意[版权问题](#版权问题)
+欢迎大家参与贡献资源，投稿前请阅读[版权说明](#版权说明)。
 
 ## 投稿方式
 
