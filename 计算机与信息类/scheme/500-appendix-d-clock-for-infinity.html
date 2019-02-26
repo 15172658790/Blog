@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>附录D 可设为infinity的时钟</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+      <h1 id="-d-">附录D 可设为infinity的时钟</h1>
+<p>Guile的过程<code>alarm</code>提供了一种可中断的定时器机制。用户可以给这个时钟设置或重置一些时间片，或者让它停止。当时钟的定时器递减到0后，它就会执行用户之前设定的动作。Guile的<code>alarm</code>不是一个类似于第十五章第一节里定义的那种时钟，但是我们可以很容易的把它改造成那样。</p>
+<p>时钟的定时器的初始状态是停止的，也就是说它不会随着时间流逝而被“触发”。如果想把定时器的触发时间设置为<code>n</code>秒（<code>n</code>不为0），运行<code>(alarm n)</code>。如果定时器已经被设定过了，那么<code>(alarm n)</code>就返回该定时器在本次设定前剩余的秒数。如果之前没有设定过，则返回0。</p>
+<p>执行<code>(alarm 0)</code>让时钟的定时器停止，即定时器中的计数器【你可以理解为一个变量】不会随时间而递减，而且不会触发。<code>(alarm 0)</code>同样返回定时器在本次设定前剩余的秒数（如果之前设定过的话）。</p>
+<p>默认情况下，当时钟的定时器计数减到0时，Guile会在控制台上显示一条消息并退出。更多的行为可以用过程<code>sigaction</code>来设定，如下所示：</p>
+<pre><code class="lang-scheme">(sigaction SIGALRM
+  (lambda (sig)
+    (display "Signal ")
+    (display sig)
+    (display " raised.  Continuing...")
+    (newline)))
+</code></pre>
+<p>第一个参数<code>SIGALRM</code>（恰好是14）告诉<code>sigaction</code>需要设定的时钟处理函数<a href="#foot1">[1]</a>。第二个参数是一个用户指定的单参数过程。在这个例子里，当时钟触发时，处理函数会在控制台上显示<code>"Signal 14 raised. Continuing..."</code>而不是退出Scheme（14是变量<code>SIGALRM</code>的值，时钟会把它传递给它对应的处理过程，我们现在先不考虑这个）。</p>
+<p>从我们的角度看，这种简单的定时器机制有一个问题。过程<code>alarm</code>的返回值<code>0</code>的意义是不明确的：既可能是指时钟处于停止状态，也有可能是刚好计时器减到了0。我们可以通过在时钟的算法里引入<code>*infinity*</code>来解决这个问题。换句话说，我们需要的时钟与<code>alarm</code>基本上是差不多的，除了一点，那就是如果时钟停止的话，那么它有<code>*infinity*</code>秒。这样就看起来比较自然了。</p>
+<ol>
+<li><code>(clock n)</code>对于一个停止的时钟返回<code>*infinity*</code>，而不是0。</li>
+<li>如果让时钟停止，执行<code>(clock *infinity*)</code>，而不是<code>(clock 0)</code>。</li>
+<li><code>(clock 0)</code>相当于给时钟设置一个无限小的时间，也就是让它立即触发。</li>
+</ol>
+<p>在Guile中，我们可以把<code>*infinity*</code>定义为如下的“数”：</p>
+<pre><code class="lang-scheme">(define *infinity* (/ 1 0))
+</code></pre>
+<p>我们用<code>alarm</code>来定义<code>clock</code>。</p>
+<pre><code class="lang-scheme">(define clock
+  (let ((stopped? #t)
+        (clock-interrupt-handler
+         (lambda () (error "Clock interrupt!"))))
+    (let ((generate-clock-interrupt
+           (lambda ()
+             (set! stopped? #t)
+             (clock-interrupt-handler))))
+      (sigaction SIGALRM
+                 (lambda (sig) (generate-clock-interrupt)))
+      (lambda (msg val)
+        (case msg
+          ((set-handler)
+           (set! clock-interrupt-handler val))
+          ((set)
+           (cond ((= val *infinity*)
+                  ;This is equivalent to stopping the clock.
+                  ;This is almost equivalent to (alarm 0), except
+                  ;that if the clock is already stopped,
+                  ;return *infinity*.
+
+                  (let ((time-remaining (alarm 0)))
+                    (if stopped? *infinity*
+                        (begin (set! stopped? #t)
+                          time-remaining))))
+
+                 ((= val 0)
+                  ;This is equivalent to setting the alarm to
+                  ;go off immediately.  This is almost equivalent
+                  ;to (alarm 0), except you force the alarm
+                  ;handler to run.
+
+                  (let ((time-remaining (alarm 0)))
+                    (if stopped?
+                        (begin (generate-clock-interrupt)
+                          *infinity*)
+                        (begin (generate-clock-interrupt)
+                          time-remaining))))
+
+                 (else
+                  ;This is equivalent to (alarm n) for n != 0.
+                  ;Just remember to return *infinity* if the
+                  ;clock was previously quiescent.
+
+                  (let ((time-remaining (alarm val)))
+                    (if stopped?
+                        (begin (set! stopped? #f) *infinity*)
+                        time-remaining))))))))))
+</code></pre>
+<p>过程<code>clock</code>用到了三个内部状态变量：</p>
+<ol>
+<li><code>stopped?</code>，表示时钟是否是停止的；</li>
+<li><code>clock-interrupt-handler</code>，一个过程，表示用户希望在时钟触发后执行的动作；</li>
+<li><code>generate-clock-interrupt</code>，另一个过程，该过程会在运行用户定义的时钟处理过程前把<code>stopped?</code>设为<code>false</code>。</li>
+</ol>
+<p>过程<code>clock</code>有两个参数。如果第一个参数是<code>set-handler</code>，那么就把第二个参数作为时钟处理器。</p>
+<p>如果第一个参数是<code>set</code>，就把该时钟触发时间设置为第二个参数，返回本次设定前定时器剩余的秒数。代码对<code>0</code>、<code>*infinity*</code>以及其他时间值的处理是不同的，这样用户可以得到一个算术上对<code>alarm</code>透明的接口。</p>
+<hr>
+<p><a name="foot1">[1]</a>. 还有一些其他的信号和与之相应的处理器，<code>sigaction</code>同样可以使用它们。</p>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+const m = 1;
+procedure p;
+begin
+  print m;
+end;
+
+begin
+  call p;
+end.

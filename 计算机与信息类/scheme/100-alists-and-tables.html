@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十章 关联表和表格</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第十章 关联表和表格</h1>
+<p>关联表是Scheme一种特殊形式的列表。列表的每一个元素都是一个点对，其中的car（左边的元素）被称为一个“键”，cdr（右边的元素）被称为和该键关联的值。例如：</p>
+<pre><code class="lang-scheme">((a . 1) (b . 2) (c . 3))</code></pre>
+<p>调用程序<code>(assv k al)</code>能在关联表<code>al</code>中找到和键<code>k</code>关联的CONS单元。在查找时关联表中的键与<code>k</code>使用<code>eqv?</code>过程来比较。然而有时我们可能希望自定义一个键的比较函数。例如，如果键是不区分大小写的字符串，那默认的<code>eqv?</code>就没什么用了。</p>
+<p>我们现在定义一个结构<code>table</code>(表格)，这是一个改进后的关联表，它可以允许用户在它的键上自定义比较函数。它的字段是<code>equ</code>和<code>alist</code>。</p>
+<pre><code class="lang-scheme">(defstruct table (equ eqv?) (alist '()))</code></pre>
+<p>（默认的比较函数是<code>eqv?</code>——对于一个普通的关联表——关联表的初始化为空。）</p>
+<p>我们将使用程序<code>table-get</code>得到与一个给定键关联的值（相对于cons单元）。<code>table-get</code>接受一个<code>table</code>(表格)和一个键作为参数，还有一个可选的默认值，这样若在表格中未找到该键则返回该默认值：</p>
+<pre><code class="lang-scheme">(define table-get
+  (lambda (tbl k . d)
+    (let ((c (lassoc k (table.alist tbl) (table.equ tbl))))
+      (cond (c (cdr c))
+            ((pair? d) (car d))))))</code></pre>
+<p>在<code>table-get</code>中使用的程序<code>lassoc</code>，定义如下：</p>
+<pre><code class="lang-scheme">(define lassoc
+  (lambda (k al equ?)
+    (let loop ((al al))
+      (if (null? al) #f
+          (let ((c (car al)))
+            (if (equ? (car c) k) c
+                (loop (cdr al))))))))</code></pre>
+<p>程序<code>table-put</code>用来更新给定表格中的一个键的值：</p>
+<pre><code class="lang-scheme">(define table-put!
+  (lambda (tbl k v)
+    (let ((al (table.alist tbl)))
+      (let ((c (lassoc k al (table.equ tbl))))
+        (if c (set-cdr! c v)
+            (set!table.alist tbl (cons (cons k v) al)))))))</code></pre>
+<p>程序<code>table-for-each</code>为每个表格中键/值对调用给定的程序</p>
+<pre><code class="lang-scheme">(define table-for-each
+  (lambda (tbl p)
+    (for-each
+     (lambda (c)
+       (p (car c) (cdr c)))
+     (table.alist tbl))))</code></pre>
+  </body>
+</html>

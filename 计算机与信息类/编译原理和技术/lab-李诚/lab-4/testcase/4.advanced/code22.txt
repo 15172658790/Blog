@@ -1,0 +1,13 @@
+const m = 3, n = 4;
+var x;
+begin
+  if m = n then x := 1
+  elif m > n then x := 2
+  else x := 3;
+  do
+  begin
+    x := x + x;
+  end;
+  while x < 6;
+  print x;
+end.

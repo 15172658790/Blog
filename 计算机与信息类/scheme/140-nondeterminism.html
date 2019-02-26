@@ -1,0 +1,294 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十四章 不确定性</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1 id="-">第十四章 不确定性</h1>
+<p>麦卡锡的非确定运算符<code>amb</code>几乎和Lisp一样古老，尽管现在它已经从Lisp中消失了。<code>amb</code>接受一个或多个表达式，并在它们中进行一次“非确定”（或者叫“模糊”）选择，这个选择会让程序趋向于有意义。现在我们来探索一下Scheme内置的<code>amb</code>过程，该过程会对模糊的选项进行深度优先选择，并使用Scheme的控制操作符<code>call/cc</code>来回溯其他的选项。结果是一个优雅的回溯机制，该机制可用于在Scheme中对问题空间进行搜索而不需要另一种扩展了的语言。这种内嵌的恢复续延的机制可以用来实现Prolog风格的逻辑语言，但是更方便（sparer），因为这个操作符更像是Scheme的一个布尔运算符，使用时不需要特殊的上下文（context），而且也不依赖语言学的一些基础元素如逻辑变量和归纳法（unification）。</p>
+<h2 id="14-1-amb-">14.1 对amb的描述</h2>
+<p>最早的Scheme的教程SICP对<code>amb</code>进行了易于理解的描述，同时还给出了许多例子。说得直白一些，<code>amb</code>接受零个或更多表达式并“不确定”的返回其中“一个”的值。因此：</p>
+<pre><code class="lang-scheme">(amb 1 2)
+</code></pre>
+<p>的结果可能为1或2。</p>
+<p>不带参数调用<code>amb</code>则不会有返回值，而且应该会出错。因此：</p>
+<pre><code class="lang-scheme">(amb)
+-->ERROR!!! amb tree exhausted
+</code></pre>
+<p>（我们后面再讨论这个错误信息。）</p>
+<p>特别的，如果它的至少一个外层表达式收敛（converges）此时需要<code>amb</code>返回一个值，那么就不会出错，因此：</p>
+<pre><code class="lang-scheme">(amb 1 (amb))
+</code></pre>
+<p>而且：</p>
+<p>都返回<code>1</code>。</p>
+<p>很明显，<code>amb</code>不能简单的等同于它的第一个子表达式，因为它必须返回一个“非错误”的值，如果有这种可能的话。然而，仅仅这样还不够：为使程序收敛的选择比单纯选择<code>amb</code>的子表达式要更加严格。<code>amb</code>应该返回让“整个”程序收敛的值。在这个意义上，<code>amb</code>是一个“神”一般的运算符。</p>
+<p>比如：</p>
+<pre><code class="lang-scheme">(amb #f #t)
+</code></pre>
+<p>可以返回<code>#f</code>或<code>#t</code>，但是在程序：</p>
+<pre><code class="lang-scheme">(if (amb #f #t)
+    1
+    (amb))
+</code></pre>
+<p>中，第一个<code>amb</code>表达式必须返回<code>#t</code>，如果返回<code>#f</code>，那就会执行<code>else</code>分支，这会导致整个程序挂掉。</p>
+<h2 id="14-2-scheme-amb">14.2 用Scheme实现amb</h2>
+<p>在我们的<code>amb</code>实现中，我们令<code>amb</code>的子表达式从左向右。也就是说，我们先选择第一个子表达式，如果不论怎样它都失败，那再选择第二个，如此等等。在回溯到前一个<code>amb</code>之前，程序控制流中后面出现的<code>amb</code>也被搜索以查看所有的可能性。换句话说，我们对<code>amb</code>的选择树进行了一个深度优先搜索，当我们碰到失败的情况时，我们就回溯到最近的节点来尝试其他的选择。（这叫做按时间顺序的回溯。）</p>
+<p>我们首先定义一个机制来处理基本的错误的续延：</p>
+<pre><code class="lang-scheme">(define amb-fail '*)
+
+(define initialize-amb-fail
+  (lambda ()
+    (set! amb-fail
+      (lambda ()
+        (error "amb tree exhausted")))))
+
+(initialize-amb-fail)
+</code></pre>
+<p>当<code>amb</code>出错时，它调用绑定到<code>amb-fail</code>的续延。这个续延是在所有<code>amb</code>的选择树都被尝试过并且失败的情况下调用的。</p>
+<p>我们把<code>amb</code>定义为一个宏，接受任意数量的参数。</p>
+<pre><code class="lang-scheme">(define-macro amb
+  (lambda alts...
+    `(let ((+prev-amb-fail amb-fail))
+       (call/cc
+        (lambda (+sk)
+
+          ,@(map (lambda (alt)
+                   `(call/cc
+                     (lambda (+fk)
+                       (set! amb-fail
+                         (lambda ()
+                           (set! amb-fail +prev-amb-fail)
+                           (+fk 'fail)))
+                       (+sk ,alt))))
+                 alts...)
+
+          (+prev-amb-fail))))))
+</code></pre>
+<p>对<code>amb</code>的调用被首先存储到<code>+prev-amb-fail</code>中，<code>amb-fail</code>的值是此时的入口。这是因为<code>amb-fail</code>变量会被随着对可能选项的遍历被设置为不同的失败续延。</p>
+<p>我们然后捕获<code>amb</code>的入口续延<code>+sk</code>，这样当求出一个“非失败”的值时，它可以马上退出<code>amb</code>。</p>
+<p>每个序列中的选择<code>alt</code>都被尝试（Scheme中隐式的<code>begin</code>序列）。</p>
+<p>首先，我们捕获当前续延<code>+fk</code>，把它包在一个过程中并把该过程赋给<code>amb-fail</code>。接着替换物被求值<code>(+sk alt)</code>。如果<code>alt</code>的求值没有失败，那么把它的返回值作为参数给续延<code>+sk</code>，这样马上就退出了<code>amb</code>的调用。如果<code>alt</code>失败了，就调用<code>amb-fail</code>。<code>amb-fail</code>做的第一件事是重新设置<code>amb-fail</code>为之前入口时的值。它接下来调用失败续延<code>+fk</code>，这个续延会尝试下个可能的选择（如果存在的话）。</p>
+<p>如果所有选择都失败了，<code>amb</code>入口的<code>amb-fail</code>（我们之前把它存放在<code>+prev-amb-fail</code>中）会被调用。</p>
+<h2 id="14-3-scheme-amb">14.3 在Scheme中使用amb</h2>
+<p>选择一个1到10之间的数字，我们可以这样写：</p>
+<pre><code class="lang-scheme">(amb 1 2 3 4 5 6 7 8 9 10)
+</code></pre>
+<p>毫无疑问这个程序会返回1（根据我们之前实现的策略），但这个与它的上下文有关，它完全可能返回给定的任何数字。</p>
+<p>过程<code>number-between</code>是一种生成给定<code>lo</code>到<code>hi</code>（包括<code>lo</code>和<code>hi</code>在内）之间数字的抽象方法：</p>
+<pre><code class="lang-scheme">(define number-between
+  (lambda (lo hi)
+    (let loop ((i lo))
+      (if (> i hi) (amb)
+          (amb i (loop (+ i 1)))))))
+</code></pre>
+<p>因此<code>(number-between 1 6)</code>会首先生成1。如果失败了，继续循环，生成2。如果还是失败，我们就得到3，这样一直到6。6以后，<code>loop</code>以参数7被调用，这比6要大，调用<code>(amb)</code>。这会产生一个最终的错误（回忆之前我们所说的，单独的<code>(amb)</code>肯定会出现错误）这时，这个包含<code>(number-between 1 6)</code>的程序会按时间顺序依次回溯之前的<code>amb</code>调用，用另一种方式来满足这个调用。</p>
+<p><code>(amb)</code>一定失败的特点可以用于程序的 <em>断言</em> 中。</p>
+<pre><code class="lang-scheme">(define assert
+  (lambda (pred)
+    (if (not pred) (amb))))
+</code></pre>
+<p>调用<code>(assert pred)</code>确保了<code>pred</code>为真，否则它会让当前的<code>amb</code>选择点失败<a href="#foot-note1" name='1'><sup>1</sup></a>。</p>
+<p>下面的程序用<code>assert</code>来生成一个小于等于其参数<code>hi</code>的素数：</p>
+<pre><code class="lang-scheme">(define gen-prime
+  (lambda (hi)
+    (let ((i (number-between 2 hi)))
+      (assert (prime? i))
+      i)))
+</code></pre>
+<p>这看起来也太简单了，只是当不论以任何数字（如20）调用这个过程，它永远会给出第一个解：2。</p>
+<p>我们当然希望得到所有的解，而不是只有第一个。这种情况下，我们会希望得到所有比20小的素数。一种方法是在该过程输出了第一个解后，显式地调用失败续延。因此：</p>
+<pre><code class="lang-scheme">(amb)
+=> 3
+</code></pre>
+<p>这样又会产生另一个失败续延，我们还可以继续调用它来得到另一个解。</p>
+<pre><code class="lang-scheme">(amb)
+=> 5
+</code></pre>
+<p>这种方式的问题是程序首先在Scheme的命令提示符后面被调用，并且在Scheme的命令行上调用<code>(amb)</code>也可以得到成功的解。实际上，我们正在使用不同的程序（我们无法预计到底有多少！），并把信息从前一个传递到下一个。相反的，我们希望可以在任意上下文中调用某种形式然后返回这些解。为此我们定义了<code>bag-of</code>宏，该宏返回其参数的所有成功实例。（如果参数永远不能成功，就返回空列表）因此我们可以这样写：</p>
+<pre><code class="lang-scheme">(bag-of
+  (gen-prime 20))
+</code></pre>
+<p>这样会返回：</p>
+<pre><code class="lang-scheme">(2 3 5 7 11 13 17 19)
+</code></pre>
+<p>宏<code>bag-of</code>定义如下：</p>
+<pre><code class="lang-scheme">(define-macro bag-of
+  (lambda (e)
+    `(let ((+prev-amb-fail amb-fail)
+           (+results '()))
+       (if (call/cc
+            (lambda (+k)
+              (set! amb-fail (lambda () (+k #f)))
+              (let ((+v ,e))
+                (set! +results (cons +v +results))
+                (+k #t))))
+           (amb-fail))
+       (set! amb-fail +prev-amb-fail)
+       (reverse! +results))))
+</code></pre>
+<p><code>bag-of</code>首先保存它的入口到<code>amb-fail</code>。它重新定义了<code>amb-fail</code>为一个在<code>if</code>测试中创建的本地续延。在这个测试中，<code>bag-of</code>的参数<code>e</code>被求值，如果成功，它的结果被收集到一个叫<code>+results</code>的列表，并且以<code>#t</code>为参数调用本地续延。这会让<code>if</code>测试成功，导致<code>e</code>会在它的下一个回溯点被重新尝试。<code>e</code>的其他结果也通过这种方法获得并放进<code>+results</code>里。</p>
+<p>最后，当<code>e</code>失败时，它会调用基本的<code>amb-fail</code>，即以<code>#f</code>为参数调用本地续延。这就把控制从<code>if</code>中转移出来。我们把<code>amb-fail</code>恢复到它上一个入口的值，并返回<code>+results</code>。（过程<code>reverse!</code>只是用来把结果以他们生成的顺序展现出来）</p>
+<h2 id="14-4-">14.4 逻辑谜题</h2>
+<p>在解决逻辑谜题时，这种深度优先搜索与回溯相结合的方法的强大才能明显体现出来。这些问题用过程式的方式非常难以解决，但是可以用<code>amb</code>简洁、直截了当的解决，而且不会减少解决问题的魅力。</p>
+<h3 id="14-4-1-kalotan-">14.4.1 Kalotan谜题</h3>
+<p>Kalotan是一个奇特的部落。这个部落里所有男人都总是讲真话。所有的女人从来不会连续2句讲真话，也不会连续2句都讲假话。</p>
+<p>一个哲学家（Worf）开始研究这些人。Worf不懂Kalotan的语言。一天他碰到一对Kalotan夫妻和他们的孩子Kibi。Worf问Kibi：“你是男孩吗？”Kibi用Kalotan语回答，Worf没听懂。</p>
+<p>Wrof又问孩子的父母（他们都会说英语），其中一个人说：“Kibi说：‘我是个男孩。’”，另外一个人说：“Kibi是个女孩，Kibi撒谎了”。</p>
+<p>请问这三个Kalotan人的性别。</p>
+<p>解决的方法包括引进一堆变量，给它们赋上各种可能的值，把所有情况列举为一系列<code>assert</code>表达式。</p>
+<p>变量：<code>parent1</code>,<code>parent2</code>,<code>kibi</code>分别是父母（按照说话的顺序）和Kibi的性别。<code>kibi-self-desc</code>是Kibi用Kalotan语说的自己的性别。<code>kibi-lied?</code>表示Kibi是否说谎。</p>
+<pre><code class="lang-scheme">(define solve-kalotan-puzzle
+  (lambda ()
+    (let ((parent1 (amb 'm 'f))
+          (parent2 (amb 'm 'f))
+          (kibi (amb 'm 'f))
+          (kibi-self-desc (amb 'm 'f))
+          (kibi-lied? (amb #t #f)))
+      (assert
+       (distinct? (list parent1 parent2)))
+      (assert
+       (if (eqv? kibi 'm)
+           (not kibi-lied?)))
+      (assert
+       (if kibi-lied?
+           (xor
+            (and (eqv? kibi-self-desc 'm)
+                 (eqv? kibi 'f))
+            (and (eqv? kibi-self-desc 'f)
+                 (eqv? kibi 'm)))))
+      (assert
+       (if (not kibi-lied?)
+           (xor
+            (and (eqv? kibi-self-desc 'm)
+                 (eqv? kibi 'm))
+            (and (eqv? kibi-self-desc 'f)
+                 (eqv? kibi 'f)))))
+      (assert
+       (if (eqv? parent1 'm)
+           (and
+            (eqv? kibi-self-desc 'm)
+            (xor
+             (and (eqv? kibi 'f)
+                  (eqv? kibi-lied? #f))
+             (and (eqv? kibi 'm)
+                  (eqv? kibi-lied? #t))))))
+      (assert
+       (if (eqv? parent1 'f)
+           (and
+            (eqv? kibi 'f)
+            (eqv? kibi-lied? #t))))
+      (list parent1 parent2 kibi))))
+</code></pre>
+<p>对于辅助过程的一些说明：<code>distinct?</code>过程返回<code>true</code>，如果其参数列表里所有参数都是不同的，否则返回<code>false</code>。过程<code>xor</code>只有当它的两个参数一个真一个假时才返回<code>true</code>，否则返回<code>false</code>。</p>
+<p>输入<code>(solve-kalotan-puzzle)</code>会解决这个谜题。</p>
+<h3 id="14-4-2-">14.4.2 地图着色</h3>
+<p>人们很早以前就知道（但知道1976年才证明）至少用四种颜色就可以给地球的地图着色，也就是说给所有国家着色并保证相邻的国家的颜色是不同的。为了验证确实是这样的，我们编写下面的程序，并指出非确定性编程是如何为之提供便利的。</p>
+<p>下面的这段程序解决了西欧的地图着色问题。这个问题和其用Prolog语言的解法在《the Art of Prolog》中给出。（如果你能比较我们与那本书里的解法应该很有益处）</p>
+<p>过程<code>choose-color</code>非确定的返回四种颜色之一：</p>
+<pre><code class="lang-scheme">(define choose-color
+  (lambda ()
+    (amb 'red 'yellow 'blue 'white)))
+</code></pre>
+<p>在我们的解法中，我们为每个国家建立了一个数据结构。该结构是一个三元素的列表：第一个元素表示国家名，第二个元素是颜色，第三个元素是它相邻国家的颜色。注意我们用国家的首字母作为颜色的变量，即比利时（Belgium）的列表是<code>(list 'belgium b (list f h l g))</code>，因为——按照这个问题列表——比利时的邻国是法国(France)，荷兰(Holland)，卢森堡(Luxembourg)，德国(Germany)。</p>
+<p>一旦我们给每个国家创建了列表，我们 <em>仅仅</em> 需要陈述他们应该满足的条件，即每个国家不能与邻国有相同的颜色。换句话说，对每个国家的列表，第二个元素的值应该不在第三个元素（列表）中。</p>
+<pre><code class="lang-scheme">(define color-europe
+  (lambda ()
+
+    ;choose colors for each country
+    (let ((p (choose-color)) ;Portugal
+          (e (choose-color)) ;Spain
+          (f (choose-color)) ;France
+          (b (choose-color)) ;Belgium
+          (h (choose-color)) ;Holland
+          (g (choose-color)) ;Germany
+          (l (choose-color)) ;Luxemb
+          (i (choose-color)) ;Italy
+          (s (choose-color)) ;Switz
+          (a (choose-color)) ;Austria
+          )
+
+      ;construct the adjacency list for
+      ;each country: the 1st element is
+      ;the name of the country; the 2nd
+      ;element is its color; the 3rd
+      ;element is the list of its
+      ;neighbors' colors
+      (let ((portugal
+             (list 'portugal p
+                   (list e)))
+            (spain
+             (list 'spain e
+                   (list f p)))
+            (france
+             (list 'france f
+                   (list e i s b g l)))
+            (belgium
+             (list 'belgium b
+                   (list f h l g)))
+            (holland
+             (list 'holland h
+                   (list b g)))
+            (germany
+             (list 'germany g
+                   (list f a s h b l)))
+            (luxembourg
+             (list 'luxembourg l
+                   (list f b g)))
+            (italy
+             (list 'italy i
+                   (list f a s)))
+            (switzerland
+             (list 'switzerland s
+                   (list f i a g)))
+            (austria
+             (list 'austria a
+                   (list i s g))))
+        (let ((countries
+               (list portugal spain
+                     france belgium
+                     holland germany
+                     luxembourg
+                     italy switzerland
+                     austria)))
+
+          ;the color of a country
+          ;should not be the color of
+          ;any of its neighbors
+          (for-each
+           (lambda (c)
+             (assert
+              (not (memq (cadr c)
+                         (caddr c)))))
+           countries)
+
+          ;output the color
+          ;assignment
+          (for-each
+           (lambda (c)
+             (display (car c))
+             (display " ")
+             (display (cadr c))
+             (newline))
+           countries))))))
+</code></pre>
+<p>输入<code>(color-europe)</code>来得到一个颜色-国家对应表。</p>
+<hr>
+
+<a href="#1" name="foot-note1">1</a>. SICP把这个过程命名为<code>require</code>。我们使用<code>assert</code>标识符是为了避免与用来从其他文件中加载代码的<code>require</code>标识符混淆。
+
+  </body>
+</html>

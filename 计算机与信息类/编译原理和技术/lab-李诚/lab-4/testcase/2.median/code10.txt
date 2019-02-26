@@ -1,0 +1,11 @@
+var n, f;
+begin
+   n := 0;
+   f := 1;
+   while n <= 6 do
+   begin
+      n := n + 1;
+      f := f * n;
+   end;
+   print f;
+end.

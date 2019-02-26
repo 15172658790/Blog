@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十三章 跳转</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第十三章 跳转</h1>
+<p>Scheme的一个显著标志是它支持跳转或者<code>nonlocal control</code>。特别是Scheme允许程序控制跳转到程序的任意位置，相比之下条件语句和函数调用的限制要更多一些。Scheme的<code>nonlocal control</code>操作符是一个名为<code>call-with-current-continuation</code>的过程。下面我们会看到如何用这个操作符创建一些惊人的控制效果。</p>
+<h2>13.1 call-with-current-continuation</h2>
+<p><code>call-with-current-continuation</code>用<code>current-continuation</code>来调用它的参数（一个只有一个参数的过程）【在调用时传入参数<code>current-continuation</code>，译者注】。这就是这个操作符名字的解释了。但是由于这个名字太长，故通常缩写为<code>call/cc</code><a href="#abbr" name="1">[1]</a>。</p>
+<p>一个程序执行到任意一点的当前续延【即<code>current-continuation</code>，译者注】是该程序的后半部分【即将要被执行的部分，译者注】。因此在程序：</p>
+<pre><code class="lang-scheme">(+ 1 (call/cc
+       (lambda (k)
+         (+ 2 (k 3)))))</code></pre>
+<p>中，“后边部分”——从<code>call/cc</code>程序的角度来看，是如下的带有一个“洞”的程序（“洞”用<code>[]</code>表示）：</p>
+<pre><code class="lang-scheme">(+ 1 [])</code></pre>
+<p>也就是说，该程序的“续延”是一个把<code>1</code>和填到这个“洞”里的东西加起来的程序。</p>
+<p>这就是<code>call/cc</code>参数被调用的情况。记住<code>call/cc</code>的参数是过程：</p>
+<pre><code class="lang-scheme">(lambda (k)
+  (+ 2 (k 3)))</code></pre>
+<p>这个过程的把“续延”（现在绑定在<code>k</code>上）<code>apply</code>到参数<code>3</code>上。这就是这个续延与众不同之处。“续延”调用突然放弃了它自己的计算并把当前的计算换成了<code>k</code>中保存的程序。也就是说，这个程序中加<code>2</code>的操作被放弃了，然后<code>k</code>的参数<code>3</code>直接被发送到了那个带“洞”的程序：</p>
+<pre><code class="lang-scheme">(+ 1 [])</code></pre>
+<p>然后程序就简单的变成：</p>
+<pre><code class="lang-scheme">(+ 1 3)</code></pre>
+<p>然后返回<code>4</code>。即：</p>
+<pre><code class="lang-scheme">(+ 1 (call/cc
+       (lambda (k)
+         (+ 2 (k 3)))))</code></pre>
+<p>上面的例子叫做“‘退出’续延”，用来退出某个计算过程（这里是<code>(+ 2 [])</code>的计算）。这是一个很有用的功能，但是Scheme的续延可以用来返回到前面放弃计算的地方，然后多次调用它们。程序的“后半部分”意味着一个续延不论我们调用的次数和时间都存在，这也让<code>call/cc</code>更加强大和令人迷惑。看一个简单的例子，在解释器里输入以下代码：</p>
+<pre><code class="lang-scheme">(define r #f)
+
+(+ 1 (call/cc
+       (lambda (k)
+         (set! r k)
+         (+ 2 (k 3)))))
+=>  4</code></pre>
+<p>后面的表达式和刚才一样返回了<code>4</code>，不同之处在于这次我们把续延<code>k</code>保存到了全局变量<code>r</code>里。</p>
+<p>现在我们在<code>r</code>中永久保存了这个续延。如果我们以一个数字为参数调用它，就会返回数字加1后的结果：</p>
+<pre><code class="lang-scheme">(r 5)
+=>  6</code></pre>
+<p>注意<code>r</code>会放弃它自己的续延，打个比方我们把对<code>r</code>的调用放在一个上下文中：</p>
+<pre><code class="lang-scheme">(+ 3 (r 5))
+=>  6</code></pre>
+<p>因此<code>call/cc</code>提供的续延是一种“放弃”的续延。</p>
+<h2>13.2 “退出”续延</h2>
+<p>“退出”续延是<code>call/cc</code>最简单的用法，而且在退出函数或循环时非常有用。考虑一个过程<code>list-product</code>接收一个数字列表并把所有的数乘起来。一个直观的递归定义可以这样写：</p>
+<pre><code class="lang-scheme">(define list-product
+  (lambda (s)
+    (let recur ((s s))
+      (if (null? s) 1
+          (* (car s) (recur (cdr s)))))))</code></pre>
+<p>这个方法有一个问题。如果列表中有一个数是0，而且0后面还有很多元素，那么结果是可以预知的。如果这样上面的代码会在得出结果前产生很多无意义的递归调用。这就是“退出”续延大显身手的时候。用<code>call/cc</code>，我们可以这样重写这个过程：</p>
+<pre><code class="lang-scheme">(define list-product
+  (lambda (s)
+    (call/cc
+      (lambda (exit)
+        (let recur ((s s))
+          (if (null? s) 1
+              (if (= (car s) 0) (exit 0)
+                  (* (car s) (recur (cdr s))))))))))</code></pre>
+<p>如果遇到一个为0的元素，续延<code>exit</code>就会以参数0被调用，这样就防止了更多的调用<code>recur</code>。</p>
+<h2>13.3 树匹配</h2>
+<p>一个更加复杂的例子是把续延用于解决两个树是否有相同边缘（就是相同的元素（叶节点）有相同的顺序）的问题上。如：</p>
+<pre><code class="lang-scheme">(same-fringe? '(1 (2 3)) '((1 2) 3))
+=>  #t
+
+(same-fringe? '(1 2 3) '(1 (3 2)))
+=>  #f</code></pre>
+<p>纯粹的函数式解决方案是把两个树都抹平然后看结果是否一样。</p>
+<pre><code class="lang-scheme">(define same-fringe?
+  (lambda (tree1 tree2)
+    (let loop ((ftree1 (flatten tree1))
+               (ftree2 (flatten tree2)))
+      (cond ((and (null? ftree1) (null? ftree2)) #t)
+            ((or (null? ftree1) (null? ftree2)) #f)
+            ((eqv? (car ftree1) (car ftree2))
+             (loop (cdr ftree1) (cdr ftree2)))
+            (else #f)))))
+
+(define flatten
+  (lambda (tree)
+    (cond ((null? tree) '())
+          ((pair? (car tree))
+           (append (flatten (car tree))
+                   (flatten (cdr tree))))
+          (else
+           (cons (car tree)
+                 (flatten (cdr tree)))))))</code></pre>
+<p>然而，这样会遍历整个树来进行抹平操作，而且还要再做一遍这样的操作【遍历被抹平后生成的列表，译者注】才能找到不匹配的元素。退一步讲，即使最好的抹平算法也需要<code>cons</code>（直接修改输入的树是不可以的）</p>
+<p>我们可以用<code>call/cc</code>来解决这个问题，不需要遍历，也不需要用<code>cons</code>来拼接。每个树会被<code>map</code>到一个生成器——一个带有内部状态的过程，按照叶节点在树中出现的顺序从左到右连续的输出叶节点。</p>
+<pre><code class="lang-scheme">(define tree->generator
+  (lambda (tree)
+    (let ((caller '*))
+      (letrec
+          ((generate-leaves
+            (lambda ()
+              (let loop ((tree tree))
+                (cond ((null? tree) 'skip)
+                      ((pair? tree)
+                       (loop (car tree))
+                       (loop (cdr tree)))
+                      (else
+                       (call/cc
+                        (lambda (rest-of-tree)
+                          (set! generate-leaves
+                            (lambda ()
+                              (rest-of-tree 'resume)))
+                          (caller tree))))))
+              (caller '()))))
+        (lambda ()
+          (call/cc
+           (lambda (k)
+             (set! caller k)
+             (generate-leaves))))))))</code></pre>
+<p>当一个<code>tree->generator</code>创建的生成器被调用时，这个生成器会把调用的续延存在<code>caller</code>中，这样它就知道当找到叶节点时把它发送给谁。然后它调用一个内部定义的函数<code>generate-leaves</code>，该函数会从左到右循环遍历这个树。当循环到一个叶节点时，该函数就使用<code>caller</code>来返回该叶节点作为生成器的结果，但是它会记住后续的循环（被<code>call/cc</code>捕获为一个续延）并保存到<code>generate-leaves</code>变量，下次生成器被调用时，循环从刚才终端的地方恢复，这样它可以寻找下一个叶节点。</p>
+<p>注意<code>generate-leaves</code>做的最后一件事情，在循环结束后，它返回一个空列表给<code>caller</code>。由于空列表不是一个合法的叶节点，我们可以用它来告诉生成器没有叶节点需要生成了。</p>
+<p>过程<code>same-fringe?</code>把树作为参数来创建生成器，然后交替调用这两个生成器。只要一找到两个不同的叶节点就会返回失败。</p>
+<pre><code class="lang-scheme">(define same-fringe?
+  (lambda (tree1 tree2)
+    (let ((gen1 (tree->generator tree1))
+          (gen2 (tree->generator tree2)))
+      (let loop ()
+        (let ((leaf1 (gen1))
+              (leaf2 (gen2)))
+          (if (eqv? leaf1 leaf2)
+              (if (null? leaf1) #t (loop))
+              #f))))))</code></pre>
+<p>很容易看到每个树只被遍历了最多一次，在遇到不匹配的情况时，只会遍历最左边的那个不匹配节点【？】。而且没有用到<code>cons</code>。</p>
+<h2>13.4 协程</h2>
+<p>上面用到的生成器是一些有趣而普遍的过程概念。每次生成器被调用时，它都恢复计算，而且当它返回前会把它的续延保存在一个内部变量中这样这个生成器可以再次恢复。我们可以对生成器进行推广，这样他们可以相互恢复其他的生成器，并且互相传递结果。这样的过程叫协程。</p>
+<p>我们将会看到一个协程作为一元过程，其主体可以包含<code>resume</code>调用，<code>resume</code>是一个两参数的过程，可以被一个协程用来继续执行另一个协程（带着一个转换值）。宏<code>coroutine</code>定义一个这样的协程过程，一个变量名作为协程的初始参数，内容作为协程。</p>
+<pre><code class="lang-scheme">(define-macro coroutine
+  (lambda (x . body)
+    `(letrec ((+local-control-state (lambda (,x) ,@body))
+              (resume
+                (lambda (c v)
+                 (call/cc
+                  (lambda (k)
+                    (set! +local-control-state k)
+                    (c v))))))
+       (lambda (v)
+         (+local-control-state v)))))</code></pre>
+<p>调用这个宏可以创建一个协程（我们叫为<code>A</code>），这个协程可以有一个参数。<code>A</code>有一个内部变量叫做<code>+local-control-state</code>来保存任意时刻这个协程接下来的计算。当调用<code>resume</code>时——也就是调用另一个协程<code>B</code>时——当前协程会更新它的<code>+local-control-state</code>变量为之后的计算，然后停止，然后跳到恢复了的协程<code>B</code>，当协程<code>A</code>之后恢复时，它的计算会从它<code>+local-control-state</code>变量里存放的续延开始。</p>
+<h3>13.4.1 用协程进行树匹配</h3>
+<p>用协程会进一步简化树匹配的操作。匹配过程被编写为一个协程，该协程依赖另外两个协程提供各自的叶节点。</p>
+<pre><code class="lang-scheme">(define make-matcher-coroutine
+  (lambda (tree-cor-1 tree-cor-2)
+    (coroutine dont-need-an-init-arg
+      (let loop ()
+        (let ((leaf1 (resume tree-cor-1 'get-a-leaf))
+              (leaf2 (resume tree-cor-2 'get-a-leaf)))
+          (if (eqv? leaf1 leaf2)
+              (if (null? leaf1) #t (loop))
+              #f))))))</code></pre>
+<p>叶生成器协程会记住把它的节点返回给谁：</p>
+<pre><code class="lang-scheme">(define make-leaf-gen-coroutine
+  (lambda (tree matcher-cor)
+    (coroutine dont-need-an-init-arg
+      (let loop ((tree tree))
+        (cond ((null? tree) 'skip)
+              ((pair? tree)
+               (loop (car tree))
+               (loop (cdr tree)))
+              (else
+               (resume matcher-cor tree))))
+      (resume matcher-cor '()))))</code></pre>
+<p>现在过程<code>same-fringe?</code>可以这样写：</p>
+<pre><code class="lang-scheme">(define same-fringe?
+  (lambda (tree1 tree2)
+    (letrec ((tree-cor-1
+              (make-leaf-gen-coroutine
+               tree1
+               matcher-cor))
+             (tree-cor-2
+              (make-leaf-gen-coroutine
+               tree2
+               matcher-cor))
+             (matcher-cor
+              (make-matcher-coroutine
+               tree-cor-1
+               tree-cor-2)))
+      (matcher-cor 'start-ball-rolling))))</code></pre>
+<p>不幸的是Scheme的<code>letrec</code>语句如果想解析它引入的词法变量的相互递归调用，必须得把这个引用包围在一个<code>lambda</code>里。所以我们得这么写：</p>
+<pre><code class="lang-scheme">(define same-fringe?
+  (lambda (tree1 tree2)
+    (letrec ((tree-cor-1
+              (make-leaf-gen-coroutine
+               tree1
+               (lambda (v) (matcher-cor v))))
+             (tree-cor-2
+              (make-leaf-gen-coroutine
+               tree2
+               (lambda (v) (matcher-cor v))))
+             (matcher-cor
+              (make-matcher-coroutine
+               (lambda (v) (tree-cor-1 v))
+               (lambda (v) (tree-cor-2 v)))))
+      (matcher-cor 'start-ball-rolling))))</code></pre>
+<p>注意在这个版本的<code>same-fringe</code>里完全没有调用<code>call/cc</code>的痕迹。宏<code>coroutine</code>帮助我们处理了所有的协程。</p>
+<hr>
+<p><a name="abbr" href="#1">[1]</a>: 如果你的Scheme没有<code>call/cc</code>这个缩写，那么在你的初始化代码里加入<code>(define call/cc call-with-current-continuation)</code>，这样可以减少敲击键盘造成的手部劳损：）</p>
+
+    <!-- <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script> -->
+  </body>
+</html>

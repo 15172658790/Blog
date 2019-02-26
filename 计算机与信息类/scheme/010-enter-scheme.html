@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第一章：进入Scheme</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+    <h2>第一章：进入Scheme</h2>
+    <p>经典的第一个程序通常是把一个<code>"Hello world!"</code>显示在控制台上。用你最喜欢的编辑器，创建一个名为<code>hello.scm</code>的文件，并在里面输入以下内容：</p>
+<pre class="prettyprint lang-scm">
+;The first program
+(begin
+  (display "Hello, World!")
+  (newline))     
+</pre>
+    <p>第一行是一个注释，当Scheme发现一个分号，就把分号和这一行分号后面的文字都忽略了。</p>
+
+    <p><code>begin</code>语句（原文为form）是Scheme用来包括子语句的方式，这个例子里有两个子语句。第一句调用了<code>display</code>过程，该过程会输出它的参数（字符串<code>"Hello, World!"</code>）到控制台（或者叫“标准输出”）后面一句调用了<code>newline</code>过程，该过程输出一个换行。</p>
+    <p>想要运行这个程序首先需要启动Scheme，通常只需要在你操作系统的命令行下面输入你的Scheme可执行程序的名字即可。如果你用的是MzScheme，你需要在操作系统提示符后面输入：</p>
+<pre>
+mzscheme
+</pre>
+    <p>这将调用Scheme listener程序，这个程序读取你的输入，求值，打印结果（如果有的话），然后等待你的下一次输入。由此这通常被称为“读取-求值-打印”的循环。注意这和你操作系统的命令行没有太大区别，操作系统的命令行也读取你的命令，执行，然后等待其他命令。和操作系统一样，Scheme listener有它自己的提示符——通常是“>”，但也可能是其他的东西。</p>
+    <p>在Scheme listener里，加载文件<code>hello.scm</code>。直接运行下面的语句即可：</p>
+    <pre>
+(load "hello.scm")
+</pre>
+<p>Scheme现在执行<code>hello.scm</code>文件的内容，输出<code>Hello, World!</code>接着后面是一个换行符。然后你又得到了命令提示符，可以输入更多命令。</p>
+    <p>现在由于你有一个很好用的listener，所以你用不着每次把你的程序写到一个文件里然后load它，有时候，特别是当你想试试某些东西的时候，直接在listener的提示符后面输入表达式然后看结果会更简单。比如，在Scheme的提示符下输入：</p>
+<pre>
+(begin (display "Hello, World!")
+       (newline))
+</pre>
+    <p>会得到：</p>
+<pre>
+Hello, World!
+</pre>
+    <p>事实上，你可以简单地在提示符后面输入<code>"Hello, World!"</code>然后你可以得到作为结果的字符串：</p>
+<pre>
+"Hello, World!"
+</pre>
+    <p>因为这是listener对<code>"Hello, World!"</code>求值的结果。</p>
+<p>第二种方式产生的结果除了有双引号以外，两段程序还有一个标志性的区别。第一段(用<code>begin</code>开头的)并没有做任何的运算，而显示的结果是<code>display</code>和<code>newline</code>过程的副作用向标准输出写出来的。第二段程序，<code>&quot;Hello, World!&quot;</code>运算得到的结果在这个情况下和这个字符串本身是一致的。</p>
+<p>以后，我们会使用标记<code>=&gt;</code>来表示运算。就像这样<code>E =&gt; v</code>表示语句段<code>E</code> 运算得到结果值为<code>v</code>。
+例如：</p>
+<pre><code>(begin
+  (display &quot;Hello, World!&quot;)
+  (newline))
+=&gt;</code></pre>
+<p>（没有结果），尽管它有输出<code>Hello, World!</code>到标准输出的副作用。</p>
+<p>而另一个程序段，</p>
+<pre><code>&quot;Hello, World!&quot;
+=&gt;  &quot;Hello, World!&quot;</code></pre>
+<p>在上面两种代码情况下，我们运行完后还是停在命令提示符后。如果要退出Scheme，输入<code>(exit)</code>，这样会退出Scheme命令行。</p>
+<p>Scheme命令行非常便于交互式的测试程序和程序片段。然而这绝不是必须的。你当然可以坚持传统的方式完全在文件中来创建程序，然后用Scheme来执行它们而不使用任何明显的命令行。</p>
+<p>在MzScheme中，例如你可以在操作系统的命令行中这样输</p>
+<pre><code class="lang-scheme">mzscheme –r hello.scm</code></pre>
+<p>这样不需要和Scheme命令行打交道就可以产生问候的结果了。
+在问候结果产生后，mzscheme将会退回操作系统的命令提示。
+这几乎就像是你直接写了<code>echo Hello , World!</code></p>
+<p>你甚至可以把<code>hello.scm</code>当成是一个系统命令来看待(一个内核脚本或批处理文件)，但具体得等到第十六章来讲解。</p>
+
+  </body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第七章 输入输出</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第七章 输入输出</h1>
+<p>Scheme的输入/输出程序可以使你从输入端口读取或者将写入到输出端口。端口可以关联到控制台，文件和字符串。</p>
+<h2>7.1 读取</h2>
+<p>Scheme的读取程序带有一个可选的输入端口参数。如果端口没有特别指定，则假设为当前端口（一般是控制台）。</p>
+<p>读取的内容可以是一个字符，一行数据或是S表达式。当每次执行读取时，端口的状态就会改变，因此下一次就会读取当前已读取内容后面的内容。如果没有更多的内容可读，读取程序将返回一个特殊的数据——文件结束符或EOF对象。这个对象只能用<code>eof-object?</code>函数来判断。</p>
+<p><code>read-char</code>程序会从端口读取下一个字符。<code>read-line</code>程序会读取下一行数据，并返回一个字符串（不包括最后的换行符），<code>read</code>程序则会读取下一个S表达式。</p>
+<h2>7.2 写入</h2>
+<p>Scheme的写入程序接受一个要被写入的对象和一个可选的输出端口参数。如果未指定端口，则假设为当前端口（一般为控制台）。</p>
+<p>写入的对象可以是字符或是S表达式。</p>
+<p><code>write-char</code>程序可以向输出端口写入一个给定的字符（不包括<code>#\</code>）。
+<code>write</code>和<code>display</code>程序都可以向端口写入一个给定的S表达式，唯一的区别是：<code>write</code>程序会使用机器可读型的格式而<code>display</code>程序却不用。例如，<code>write</code>用双引号表示字符串，用<code>#\</code>句法表示字符，但<code>display</code>却不这么做。</p>
+<p><code>newline</code>程序会在输出端口输出一个换行符。</p>
+<h2>7.3 文件端口</h2>
+<p>如果端口是标准的输入和输出端口，Scheme的I/O程序就不需要端口参数。但是，如果你明确需要这些端口，则<code>current-input-port</code>和<code>current-output-port</code>这些零参数程序会提供这个功能，例如：</p>
+<pre><code class="lang-scheme">(display 9)
+(display 9 (current-output-port))</code></pre>
+<p>拥有相同的效果。</p>
+<p>一个端口通过打开文件和这个文件关联在一起。<code>open-input-file</code>程序会接受一个文件名作为参数并返回一个和这个文件关联的新的输入端口。<code>open-output-file</code>程序会接受一个文件名作为参数并返回一个和这个文件关联的新的输出端口。如果打开一个不存在的输入文件，或者打开一个已经存在的输出文件，程序都会出错。</p>
+<p>当你已经在一个端口执行完输入或输出后，你需要使用<code>close-input-port</code>或<code>close-output-port</code>程序将它关闭。</p>
+<p>在下述例子中，假如文件<code>hello.txt</code>文件只包含一个单词<code>hello</code>。</p>
+<pre><code class="lang-scheme">(define i (open-input-file "hello.txt"))
+
+(read-char i)
+=>  #\h
+
+(define j (read i))
+
+j
+=>  ello</code></pre>
+<p>假如文件<code>greeting.txt</code>在下述程序运行前不存在：</p>
+<pre><code class="lang-scheme">(define o (open-output-file "greeting.txt"))
+
+(display "hello" o)
+(write-char #\space o)
+(display 'world o)
+(newline o)
+
+(close-output-port o)</code></pre>
+<p>现在<code>Greeting.txt</code>文件将会包含这样一行：</p>
+<pre><code>hello world</code></pre>
+<h3>7.3.1 文件端口的自动打开和关闭</h3>
+<p>Scheme提供了<code>call-with-input-file</code>和<code>call-with-output-file</code>过程，这些过程会照顾好打开的端口并在你使用完后将端口关闭。</p>
+<p><code>call-with-input-file</code>程序接受一个文件名参数和一个过程。这个过程被应用在一个已打开的文件输入端口。当程序结束时，它的结果会在保证端口关闭后返回。</p>
+<pre><code class="lang-scheme">(call-with-input-file "hello.txt"
+  (lambda (i)
+    (let* ((a (read-char i))
+           (b (read-char i))
+           (c (read-char i)))
+      (list a b c))))
+=>  (#\h #\e #\l)</code></pre>
+<p><code>call-with-output-file</code>程序会对输出文件提供类似的服务。</p>
+<h2>7.4 字符串端口</h2>
+<p>一般来说将字符串与端口相关联是很方便的。因此，<code>open-input-string</code>程序将一个给定的字符串和一个端口关联起来。读取这个端口的程序将读出下述字符串：</p>
+<pre><code class="lang-scheme">(define i (open-input-string "hello world"))
+
+(read-char i)
+=>  #\h
+
+(read i)
+=>  ello
+
+(read i)
+=>  world</code></pre>
+<p><code>open-output-string</code>创建了一个输出端口，最终可以用于创建一个字符串：</p>
+<pre><code class="lang-scheme">(define o (open-output-string))
+
+(write 'hello o)
+(write-char #\, o)
+(display " " o)
+(display "world" o)</code></pre>
+<p>现在你可以使用<code>get-output-string</code>程序得到保留在字符串端口<code>o</code>中的字符串：</p>
+<pre><code class="lang-scheme">(get-output-string o)
+=>  "hello, world"</code></pre>
+<p>字符串端口不需要显式地去关闭。</p>
+<h2>7.5 加载文件</h2>
+<p>我们已将看到<code>load</code>程序可以加载包含<code>Scheme</code>代码的文件。<code>load</code>一个文件意味着按顺序求值文件中每一个Scheme表达式。<code>load</code>中的路径参数是相对当前Scheme工作目录计算的，该工作目录一般是调用Scheme可执行文件时的目录。</p>
+<p>一个文件可以加载其他的文件，这在包含许多文件的大项目中十分有用。但是，除非使用绝对路径，否则<code>load</code>参数中的文件位置将依赖于执行Scheme的当前目录。而提供绝对路径名并不是很方便，因为我们更愿意把项目文件作为一个单元（保留它们的相对路径名）在很多不同机器中运行。</p>
+<p>Mzscheme提供了<code>load-relative</code>程序，可以很好的解决这个问题。<code>load-relative</code>，和<code>load</code>相似，带有一个路径名参数。当在<code>foo.scm</code>文件中出现<code>load-relative</code>调用时，它的参数的路径将根据文件<code>foo.scm</code>所在目录的路径来计算。特别注意的是，这个路径名和执行Scheme的当前目录无关，因此也就可以方便地进行多文件程序的开发。</p>
+
+    <!-- <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script> -->
+  </body>
+</html>

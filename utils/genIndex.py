@@ -1,5 +1,6 @@
 #coding: utf-8
 import os
+import re
 import markdown
 import shutil
 from getSize import getSize
@@ -22,6 +23,7 @@ def pinyinSort(items):
 
 def md2html(s):
     exts = ['markdown.extensions.extra', 'markdown.extensions.codehilite','markdown.extensions.tables','markdown.extensions.toc']
+    s = re.sub(r'\<\!--.*?--\>','',s,flags=re.DOTALL)
     return markdown.markdown(s,extensions=exts)
 
 def getFmt():

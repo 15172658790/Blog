@@ -1,0 +1,309 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <title>Java 符号表设计的相关问题</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>Java 符号表设计的相关问题</h1>
+<p>翻译自：<a href="http://www.bearcave.com/software/java/java_symtab.html">http://www.bearcave.com/software/java/java_symtab.html</a></p>
+<p>很多Java语言处理器不会读Java，而是读Java类文件，并从类文件生成符号表和抽象语法树。Java类文件里的代码在语法和语义上都是正确的。结果就是这些工具的作者避免考虑实现一个Java前端时会遇到的很多困难的问题。</p>
+<p>Java编程语言的设计者在设计这个语言时没有考虑实现的简单性。确实应当如此，因为更重要的是语言容易使用。设计Java编译器前端的语义分析时遇到的一个很困难的问题就是符号表的设计。这个页面零散地讨论了一些Java符号表设计时遇到的问题。</p>
+<p>编译器的前端主要工作包括一下几点：</p>
+<ol>
+<li><p>解析源代码识别正确的程序，对不正确的结构报错。对BPI这个Java前端来说，这个工作由ANTLR生成的一个解析器完成。解析器的输出是一个抽象语法树（AST），包括了源代码里所有的声明。</p>
+</li>
+<li><p>从Java类文件中读取声明信息，对于本地Java编译器来说，把AST编译为字节码。这也包括了下面的transitive closure（图中所有可以从根节点到达的节点，从这个角度讲这个图是一个类组成的树，通过这个树可以定义所有需要被编译器读取的类文件。</p>
+</li>
+<li><p>处理AST和类文件中的声明，构造符号表。一旦这些声明节点被处理，就从AST当中剔除掉。</p>
+</li>
+</ol>
+<p>前端的输出是一个语法和语义上都正确的AST，每个节点都有一个指针指向一个标识符（如果这是一个叶节点的话）或一个类型（如果这是一个非终结节点或着一个类型引用，如MyType.class）。</p>
+<p>“符号表”这个词通常指代一种比表格（比如struct组成的数组）数据结构。当符号和类型被解析的时候，符号表必须反应当前正在被处理的AST的作用域。比如，下面的C语言代码有三个叫<code>x</code>的变量，分散在不同的作用域里。</p>
+<pre><code class="lang-c">static char x;
+  int foo() {
+     int x;
+     {
+        float x;
+     }
+  }</code></pre>
+<p>解析符号和类型需要遍历AST来处理各种声明。在遍历AST中不同的作用域时，符号表始终反应当前作用域，这样在查找<code>x</code>的时候，当前作用域的符号会被返回。</p>
+<p>符号表的作用域结构只在解析符号和类型时有用。名字一旦解析完成。AST中名字和它的符号的关系可以直接通过一个指针找到。</p>
+<p>Pascal和C语言（这两种语言只有简单的分层作用域）的编译器使用的符号表通常都是直接镜像语言的作用域。每个作用域都有一个符号表。每个符号表都有一个指针指向它上层作用域。最上层的根符号表就是全局符号表，包含了全局的符号和函数（或者是Pascal里的过程）。当进入一个函数作用域时，就创建一个函数符号表。这个函数符号表的父指针指向前面紧接着的一个“上面的”层（或是全局符号表，或是Pascal里一个闭合的过程或函数）。一个块符号表指向它的父符号表，也就是函数符号表。符号搜索从当前作用域向全局作用域向上遍历进行。</p>
+<p>一旦符号和类型解析完毕，作用域层级就不需要了。然而函数或是类的局部作用域仍然很重要，而且这些局部作用域必须仍然可以被编译器访问这个作用域里的所有符号。比如，为了在函数调用时分配堆栈，编译器必须能找到所有与这个方法相关的变量。Java编译器必须能购跟踪类的成员，因为这些变量会被分配到可以被垃圾回收的内存中。</p>
+<p>大多数面向对象语言的作用域都比过程语言（C或PASCAL）要更复杂。C++支持多重继承，Java支持多接口定义（多重继承的一种正确方式）。符号表必须足够高效这样编译器前端才不会花大量时间在查找符号上。Java编译器的符号表设计主要有一下一些考虑：</p>
+<ol>
+<li><p>Java有一个非常大的全局作用域，因为所有的类和包都被导入到这个全局的命名空间。全局符号必须存储在一个大容量的数据结构中，而且查找的时间复杂度是O(n)，比如一个哈希表。</p>
+</li>
+<li><p>Java有非常多的局部作用域（类，方法和块）只包含较少的符号（相对全局作用域而言），对于它们使用支持大容量和高速查找的数据结构有点过于复杂了（不论是内存使用还是代码复杂度）。局部作用域应该用一个简单而且相对快速（比如O(log2(n))）的数据结构实现。比如平衡树和跳跃列表。</p>
+</li>
+<li><p>符号表应该能支持一个作用域里定义多个相同名字。符号表必须能帮助编译器解析两种相同类型（比如都是函数）的相同名字在同一作用域中多次声明产生的冲突。</p>
+</li>
+</ol>
+<p>在C语言里一个作用域里的名字必须是唯一的。比如，在C语言里一个叫MyType的类型和一个叫MyType的函数是不被允许的。在Java里一个作用域里的名字可以不是唯一的。名称会根据它所在的上下文来解析。比如：</p>
+<pre><code class="lang-java">class Rose {
+  Rose( int val ) { juliette = val; }
+  public int juliette;
+} // Rose
+
+class Venice {
+  void thorn {
+    garden = new Rose( 42 );
+    Rose( 86 );
+    garden.Rose( 94 );
+  }
+
+  Rose Rose( int val ) { garden.juliette = val; }
+  Rose garden;
+} // venice</code></pre>
+<p>这个例子中有一个名为Rose的类，一个名为Rose的构造函数，一个名为Rose的方法返回一个类型为Rose的对象。编译器必须要联系上下文才知道哪个是哪个。而且注意引用的Rose方法和garden类型是在引用后面声明的。</p>
+<p>Java中大部分符号作用域可以被描述为一个简单的层次关系（低层有指向高层的指针），除了和Java类相关的接口列表。注意接口也可以从上次接口继承。下面是Java里作用域的分级：</p>
+<pre><code>Global (objects imported via import statements)
+  Parent Interface (this may be a list)
+    Interface (there may be a list of interfaces)
+       Parent class
+         Class
+           Method
+             Block</code></pre>
+<p>符号表和语义分析（检查Java解析器返回的AST）代码必须能够解析一个符号定义是否在语义上是正确的。一个名称的多个定义是允许的（比如多个类成员）。然而不明确的符号使用是不允许的：</p>
+<blockquote>
+<p>Java语言规范 (JLS) 8.3.3.3</p>
+<p>一个类可以继承两个或更多相同名字的属性，或从两个接口继承或一个从父类继承一个从接口继承。只有在试图只用简称来模糊的引用时才会发生编译错误。明确的全称或带<code>super</code>关键字的属性访问是允许的。</p>
+</blockquote>
+<p>父类和接口都可以把其中定义的符号导入本地作用域。下面的例子中符号<code>x</code>在<code>bar</code>和<code>fu</code>中都定义了，这是允许的，因为在<code>DoD</code>类中没有引用<code>x</code>。</p>
+<pre><code class="lang-Java">interface bar {
+  int x = 42;
+}
+
+class fu {
+  double x;
+}
+
+
+class DoD extends fu implements bar {
+  int y;  // No error, since there is no local reference to x
+}</code></pre>
+<p>如果<code>x</code>在类<code>DoD</code>中被引用了，编译器必须报告一个错误，因为这种引用是不明确的</p>
+<pre><code class="lang-java">class DoD extends fu implements bar {
+  int y; 
+
+  DoD() {
+    y = x + 1;   // Error, since the reference to x is ambiguous
+  }
+}</code></pre>
+<p>简称的不明确性还会出现在接口定义的内部类和父类中：</p>
+<pre><code class="lang-java">interface BuildEmpire
+{
+  class KhubilaiKahn {
+    public int a, b, c;
+  }
+}
+
+class GengisKahn
+{
+  class KhubilaiKahn {
+    public double x, y, z;
+  }
+}
+
+
+class mongol extends GengisKahn implements BuildEmpire
+{
+  void mondo() {
+    KhubilaiKahn TheKahn;  // Ambiguous reference to class KhubilaiKahn
+  }
+}</code></pre>
+<p>Java不支持类的多重继承，但是允许一个类实现多个接口或一个接口扩展（继承）多个接口</p>
+<blockquote>
+<p>Java语言规范9.3</p>
+<p>一个接口可以继承多个相同的名字，这种情况不会引起编译错误。然而在接口内部试图用简称来引用这个属性会导致编译错误，因为这样的引用是不明确的。</p>
+</blockquote>
+<p>比如，在下面的代码中<code>key</code>是不明确的：</p>
+<pre><code class="lang-java">interface Maryland
+{
+  String key = "General William Odom";
+}
+
+interface ProcurementOffice
+{
+  String key = "Admiral Bobby Inman";
+}
+
+
+interface NoSuchAgency extends Maryland, ProcurementOffice
+{
+  String RealKey = key + "42"; // ambiguous reference to key
+}</code></pre>
+<p>当当语义分析查找符号<code>key</code>时，符号表必须允许语义检查代码来决定有两个对<code>key</code>的定义。符号表必须对作用域里的符号分类（成员和成员在一起，类和类在一起）。不像有些符号（方法，类和成员变量）没有分类因为它们可以通过上下文区分。</p>
+<p>一个方法的多次定义不会在Java中产生语义错误，因为没有多重继承。比如，如果一个同名方法从两个接口中继承，这个方法要么是相同的，要么是冗余版本。如果有一个本地方法和一个在父类中定义的方法有相同的名字和参数（签名）。本地方法会在一个“更低的”作用域并且覆盖父类的。</p>
+<h1>Java 符号表的实现</h1>
+<h2>符号表需求</h2>
+<p>考虑以上讨论的几点，一个符号表必须满足以下需求：</p>
+<ol>
+<li><p>支持一个标识符的多种定义。</p>
+</li>
+<li><p>在全局符号库中快速查找，时间复杂度O(n)</p>
+</li>
+<li><p>在局部（类、方法和块）符号中相对快速的查找O(log2(n))</p>
+</li>
+<li><p>支持Java的分层作用域</p>
+</li>
+<li><p>可以按照符号类型搜索（成员、方法，类）</p>
+</li>
+<li><p>快速决定一个符号定义是否是不明确的</p>
+</li>
+</ol>
+<h2>符号的生存期</h2>
+<p>类似C的语言可以一次编译一个函数。全局符号表必须保留当前文件中函数和它们的参数的符号信息。但是其他局部符号信息可以在函数编译后忽略。当编译器处理完一个<code>.c</code>文件（和被它引用的文件）中所有的函数后，所有的符号都被忽略了。</p>
+<p>C++可以用类似的方法来编译。定义在头文件中的类引用一个对象。当文件处理后所有的符号可以忽略了。</p>
+<p>Java更复杂。Java编译器必须读取Java符号定义来构建Class树，这个树用来确定当前正在编译的类所引用的所有类文件。也就是包含<code>main</code>方法的对象。这点出发可以找到所有被引用的类。</p>
+<p>理论上一旦所有引用的Java符号的类被编译后，这些符号就可以被忽略了。实际上这样造成如此多的问题还不如换一个内存大一点的系统。所以Java符号在整个编译期间都存在。</p>
+<h2>构建符号表作用域</h2>
+<p>符号表中分层的作用域只在语义分析时有用。分析结束后，所有的符号（标识符节点）都会指到正确的符号上。然而，一旦作用域构建完，它就在那里了。</p>
+<p>每个局部作用域（块、方法和类）有一个局部的符号表指向包围它的符号表。在顶层是全局符号表包含所有全局类和导入的符号。进行语义分析时从局部符号表向上层搜索，搜索每个符号表直到全局符号表搜索完。如果搜完全局符号表还没有找到，这个符号就不存在。</p>
+<p>Java的作用域不是一个由唯一的符号组成的简单分层结构（像C语言一样）。一个符号可能会有多个定义（类成员、方法或类名）。一个给定作用域的符号可能来自多个地方。比如下面的Java代码中类<code>gin</code>和接口<code>tonic</code>在同一层定义了相同的符号。</p>
+<pre><code class="lang-java">interface tonic {
+    int water = 1;
+    int quinine = 2;
+    int sugar = 3;
+    int TheSame = 4;
+}
+
+class gin {
+    public int water, alcohol, juniper;
+    public float TheSame;
+}
+
+class g_and_t extends gin implements tonic {
+    class contextName {
+      public int x, y, z;
+    } // contextName
+
+    public int contextName( int x ) { return x; }
+    public contextName contextName;
+}</code></pre>
+<h2>作用域、局部变量、参数</h2>
+<p>Java里的局部变量是方法中的变量，这些变量被分配到一个由块或语句创建的堆栈中。如：</p>
+<pre><code class="lang-java">class bogus {
+   public void foobar() {
+      int a, b, c;
+
+      { // this is a scope block
+         int x, y, z;
+      }
+   }
+}</code></pre>
+<p>不像C或C++，Java不允许重新声明局部变量：</p>
+<blockquote>
+<p>Java语言规范JLS 14.3.2</p>
+<p>如果一个标识符被声明为局部变量，而在其作用域内已有一个参数或本地变量，编译器会报错。因此下面的例子无法通过编译：</p>
+<pre><code class="lang-java">class Test {
+        public static void main( String[] args ) {
+          int i;
+
+          for (int i = 0; i < 10; i++)  // Error: local variable redefinition
+          redeclared
+            System.out.println(i);
+        }
+      }</code></pre>
+</blockquote>
+<p>本地局部变量允许被重定义为类成员，这让变量重定义检查也成为语义分析的一部分工作。</p>
+<h2>向前引用</h2>
+<p>向前应用是引用一个声明写在该引用后面的符号。</p>
+<p>当一个类属性被初始化时，初始器必须在前面已经声明并且初始化了。下面的例子（摘自JLS6.3）会报错：</p>
+<pre><code class="lang-java">class Test {
+    int i = j;  // compile-time error: incorrect forward reference
+    int j = 1;
+}</code></pre>
+<p>本地局部变量也不能向前引用，如：</p>
+<pre><code class="lang-java">class geomancy {
+   public float circleArea( float r ) {
+      float area;
+
+      area = pie * r * r;     // undefined variable 'pie'
+      float pie = (float)Math.PI;
+
+      return area;
+   }
+}</code></pre>
+<p>然而，向前引用允许从一个局部作用域（一个方法）引用一个在同一个类中定义的类成员。比如，在下面的Java代码中方法<code>getHexChar</code>向后引用了类成员<code>hexTab</code>：</p>
+<pre><code class="lang-java">class HexStuff {
+
+  public char getHexChar( byte digit ) {
+
+    digit = (byte)(digit & 0xf);
+    char ch = hexTab[digit];  // legal forward reference to class member
+
+    return ch;
+  } // getHexchar
+
+  private static char hexTab[] = new char[] {
+    '0','1','2','3','4','5','6','7','8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+  };
+
+} // HexStuff</code></pre>
+<h2>包</h2>
+<p>Java中最顶层编译单元是包，要么是一个显式命名的包或是一个未命名的包（包含<code>main</code>方法的函数）。所有的包都自动导入了默认的包<code>java.lang.*</code>和其他被本地系统所需要的包。用户可以显式的导入其他包。</p>
+<p>当包A导入了包B，包B提供了：
+<em> 用<code>public</code>修饰符标记的所有类和接口
+</em> 子包（如导入到B中的其他包）</p>
+<p>如果B包导入了包X，其中有一个公开类<code>foo</code>，这个类可以用全称<code>X.foo</code>引用。</p>
+<p>包给符号表加入了另一层复杂度。一个包好比一个对象，该对象定义了一堆类，接口和子包。一旦包被编译器读取，在下面如果有相同的导入语句就不会再读了，因为它的定义编译器都已经知道了。</p>
+<p>一个包所定义的类、接口和包被导入到当前包的全局作用域。在Java代码中，导入的包所定义的类名可以用简称来引用（JLS6.5.4），在被导入的包的子包中定义的类名可以用全称引用。然而在符号表中所有的类名都与一个全名关联着。</p>
+<h1>符号表实现概述</h1>
+<ol>
+<li><p>支持一个给定标识符的多重定义。</p>
+<p>所有有相同名字的标识符都被放在一个容器中。就像上面提到的，一个标识符可能是一个类成员，方法名或一个类名。一个定义可以有多个实例。比如上面Java代码中类成员<code>TheSame</code>有两个定义。容器可以用标识符的类型（成员，方法或类）来搜索，而且可以快速决定是否某个类型被多次定义（确定性引用）。如果一个对象命名了，符号会有一个属性指向它的上层（函数或类）。对于一个块这个指针是Null。注意上层不一定是上层作用域，定义在类<code>gin</code>和接口<code>tonic</code>中的符号在同一个作用域，但是它们有不同的上层。</p>
+</li>
+<li><p>快速的全局搜索
+全局符号表用大容量哈希表实现（哈希表能支持大量符号不用长的哈希链）</p>
+</li>
+<li><p>包信息
+一旦一个包被导入全局作用域，<em>这个包就不再被引用了</em>，导入的类名（类或接口）可以被引用，就如同它们是在当前编译单元中定义的（通过简称）。子包也成了全局作用域中的对象。包类型名和额外的子包可以用全称引用。
+包定义保存在一个分开的包表里。包从这个表里导入到编译单元的全局作用域。包信息在整个编译期间都存在。</p>
+</li>
+<li><p>局部查找
+通常局部Java作用域中的符号很少。本地符号查找必须要快，但是不用像全局那么快，因为通常符号很少。
+我设想了三种数据结构来实现局部符号表：</p>
+<ul>
+<li><a href="http://www.cs.umd.edu/~pugh/">跳跃列表</a>（也可以查看<a href="http://members.xoom.com/_XMCM/thomasn/s_skl.htm">Thomas Nienann关于跳跃列表的精彩网页</a></li>
+<li><a href="http://members.xoom.com/_XMCM/thomasn/s_rbt.htm">红黑树</a>（一种平衡二叉树）</li>
+<li>简单的二叉树
+对于小的符号表这三种数据结构的搜索时间都差不多。二叉树在测试中是最小最简单的算法，所以选择它作为局部符号表。</li>
+</ul>
+</li>
+<li><p>支持Java层次作用域
+每个符号表都包含一个上层作用域的指针。</p>
+</li>
+<li><p>支持以符号类型搜索
+语义分析知道它所搜索符号的上下文（这个符号是成员、方法还是类）。符号表层次以标识符和类型来搜索。</p>
+</li>
+<li><p>快速检测一个符号定义是否是模糊的
+多个相同类型的符号定义（比如两个成员）被串在一起。如果<code>next</code>指针是NULL，那就有多个定义。错误报告代码可以用这些定义报告给用户冲突的符号是在哪里定义的。</p>
+</li>
+</ol>
+<h2>符号表构造</h2>
+<p>在方法被处理之前，所有类成员引用都被处理并塞进符号表。这样在方法中对成员的引用就可以正确的解析了。</p>
+<p>方法内的声明被顺序处理。如果函数中一个名字的引用不能“看到”，就报告一个错误（未定义的名称）。</p>
+<h2>递归编译和符号表</h2>
+<p>当一个编译单元（包）被编译时，所有它引用的类和包信息必须存在。《Java语言规范》没有准确定义这是怎么做的。规范中只说被编译的Java代码可以存在一个数据库里或在一个目录下，这个目录结构和包和类的全名一一对应。类和包必须可以访问。《Java虚拟机规范》定义了Java<code>.class</code>字节码文件中的信息，但是没有说编译顺序。尽管没有规范Java是如何编译的，但还是有“通用方法”。至少对于这个设计，“通用方法”基于Sun公司的<code>javac</code>编译器和微软的<code>Visual J++</code>编译器<code>jvc</code>。</p>
+<p>当一个编译单元编译完成时，所有该编译单元所引用的外部类信息被记录在编译生成的字节码文件中。字节码文件可以打包成jar文件。就是一个用ZIP文件格式压缩存放的字节码文件层次。字节码或jar文件存放在当前文件夹或CLASSPATH环境变量指定的目录下。为了让这个机制工作。文件名最好和相关联的类名保持一致（如类<code>FooBar</code>用<code>FooBar.java</code>实现）</p>
+<p>如果，当搜索类定义时，Java编译器只找到一个<code>.java</code>文件定义了这个类或者这个<code>.java</code>文件的时间戳比相应的字节码文件要新的话，Java编译器会重新编译这个类定义。</p>
+<p>当编译顶层的编译单元时，Java编译器跟踪被导入到当前编译单元的包对象（一个包括了多个类和子包的包）。包中不是public的类定义不会被编译器保存，因为它们无法在包的外面看到。</p>
+<p>Ian Kaplan, May 2, 2000 
+Revised most recently: May 31, 2000</p>
+
+    <!-- <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script> -->
+  </body>
+</html>

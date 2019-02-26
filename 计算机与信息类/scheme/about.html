@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>关于译文</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+    <h1>关 于</h1>
+    <p style="text-align:center;color:green"><b>献给所有Scheme的有缘人</b></p>
+    <p style="text-align:center;color:green"><b>愿智慧仁爱之光永远照耀技术发展的道路</b></p>
+    
+    <h3>关于本文</h3>
+    <p>该教程中的大部分内容都能在常见的Scheme入门教材中找到，本教材中比较有特色的是关于<code>continuation</code>和<code>call/cc</code>的内容，这也是Scheme的一大特点，从这点来说有过一些编程经验（特别是Python和Javascript等动态语言）的程序员会觉得《Teach Yourself Scheme in Fixnum Days》非常适合他们，因为他们只有看一眼马上就明白了Scheme与其他语言相同的地方，因此对某些絮絮叨叨讲语法等基础知识的教程感到厌烦。而这篇文章主要是讲Scheme不同于其他编程语言的地方（不包括语法），以及这种不同是如何应用在Scheme的代码中产生神奇的效果的。当然还有一些命令行和网站CGI的东西，也许某些人希望了解一些。当然你也可以像我一样把它作为学习SICP的入门辅导书。此外，本文还可以作为MzScheme（即现在的Racket语言，之前叫PLT-Scheme）的入门教程。因为本文使用的Scheme实现即是MzScheme。希望更深入学习Racket Lisp但感觉缺乏基础的同志可以看看。</p>
+
+     
+    <h3>译文缘起及正名</h3>
+    
+    <p>2009年的时候<a href="http://www.cnblogs.com/heros/category/225196.html" target="_blank">heros</a>翻译了这篇文章的一部分（至第六章未完）。2010年的时候<a href="http://lispor.is-programmer.com/tag/Scheme%E7%AC%94%E8%AE%B0">lispor</a>写了一份本教程的读书笔记，翻译了很多内容（而我直到2014年毕设做完也没有看到）。2012年的时候又有人试图翻译这篇文章。不过后来貌似没有下文。Scheme的R5RS规范已经在2004年被译成了中文，而这篇实践性比较强的文章却迟迟没有一个完整的中文译版。所以自己翻译了一份（前六章基本是用的hero的版本），第六章后面又自己翻译了一些，顺便把附录也翻译了。这里要特别感谢我的同学何ufo，虽然他也不是很懂Scheme，不过还是翻译了第七至第十二章，我只是对他的翻译做了一些润色和校验（你发现了其实真正由我翻译的内容不是很多，只是做了一些汇总和润色的工作而已，所以我也不敢以“译者”自居）。本人也是第一次接触Scheme，水平有限，大家多多包涵。后期的任务就是看根据lispor的笔记来校对整个译文。</p>
+    <p>《Scheme语言简明教程》这个名字已经被用滥了，我见过N篇大同小异的、国内国外的Scheme教程都是这个名字（当然它们都没怎么提<code>continuation</code>和<code>call/cc</code>）。所以这样很不利于SEO。。。。不过翻译成《N天学会Scheme》或者《无师自通Scheme语言》又好像有点太俗，而且你发现了作者很聪明的用了一个“Fixnum Day”而不是常见的21天或者3天等等，这让我这个英语水平不怎么样的人很难把意思翻译完整。暂时没想到更好的名称，先就这样吧。</p>
+
+
+    <h3>致 谢</h3>
+    <p>首先感谢原作者 Dorai Sitaram 给我们提供这么好的Scheme教程，他一直在维护本文（直到2013年仍有更新）</p>
+    <p>其次要感谢本文之前的几位翻译者，没有他们的工作我肯定无法把后面的翻译完（估计现在还在前几章打转呢～）</p>
+    <p>然后还要感谢我的毕设老师，如果没有毕设催着，我肯定没法完成这个工作（虽然大一就打算着看一遍但是大四了也没开始看。。。）</p>
+    <p>最后感谢<a href="http://yinwang.org">王垠学长</a>的博客CSS模板～(写了这么多到底有没有两万汉字啊？？？)</p>
+<!--
+    <p style="text-align:center;"><b style="color:green">特别的感谢给我的爸爸妈妈，。</b><br/><br/>
+    也希望所有看本文的人也都能真正幸福地生活</p>
+-->
+  </body>
+</html>

@@ -1,0 +1,14 @@
+var i;
+
+procedure p;
+begin
+  i := 2;
+  return i;
+end;
+
+begin
+  i := 1;
+  j := call p;
+  i := i + j;
+  print i;
+end.

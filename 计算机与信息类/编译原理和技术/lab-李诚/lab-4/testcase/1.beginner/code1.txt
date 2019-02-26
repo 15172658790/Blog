@@ -1,0 +1,6 @@
+const m = 1, n = 2;
+var x;
+begin
+  x := m + n;
+  print x;
+end.

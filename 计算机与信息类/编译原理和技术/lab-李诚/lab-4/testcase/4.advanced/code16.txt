@@ -1,0 +1,34 @@
+var a[4],n;
+
+procedure sort;
+var i, j, tmp;
+begin
+  i := 0;
+  j := 0;
+  while i < n-2 do
+  begin
+    while j < n-2 do
+    begin
+      if a[i] > a[j] then
+      begin
+        tmp := a[i];
+        a[i] := a[j];
+        a[j] := tmp;
+      end;
+    end;
+  end;
+end;
+
+
+begin
+  a[0] := 3;
+  a[1] := 4;
+  a[2] := 2;
+  a[3] := 1;
+  n := 4;
+  call sort;
+  print a[0];
+  print a[1];
+  print a[2];
+  print a[3];
+end.

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十一章 系统接口</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第十一章 系统接口</h1>
+<p>一个有用的Scheme程序经常需要与底层操作系统进行交互。</p>
+<h2>11.1 检查和删除文件</h2>
+<p><code>file-exists?</code>会检查它的参数字符串是否是一个文件。<code>delete-file</code>接受一个文件名字符串作为参数并删除相应的文件。这些程序并不是Scheme标准的一部分，但是在大多数Scheme实现中都能找到它们。用这些过程操作目录（而不是文件）并不是很可靠。（用它们操作目录的结果与具体的Scheme实现有关。）</p>
+<p><code>file-or-directory-modify-seconds</code>过程接受一个文件名或目录名为参数，并返回这个目录或文件的最后修改时间。时间是从格林威治标准时间1970年1月1日0点开始记时的。例如：</p>
+<pre><code class="lang-scheme">(file-or-directory-modify-seconds "hello.scm")
+=>  893189629</code></pre>
+<p>假定<code>hello.scm</code>文件最后一次修改的时间是1998年4月21日的某个时间。</p>
+<h2>11.2 调用操作系统命令</h2>
+<p><code>system</code>程序把它的参数字符串当作操作系统命令来执行 <a href="#abbr1" name="a1">[1]</a>。如果命令成功执行并返回0，则它会返回真，如果命令执行失败并返回某非0值，则它会返回假。命令产生的任何输出都会进入标准的输出。</p>
+<pre><code class="lang-scheme">(system "ls")
+;lists current directory
+
+(define fname "spot")
+
+(system (string-append "test -f " fname)) 
+;tests if file `spot' exists
+
+(system (string-append "rm -f " fname)) 
+;removes `spot'</code></pre>
+<p>最后两个命令等价于：</p>
+<pre><code class="lang-scheme">(file-exists? fname)
+
+(delete-file fname)</code></pre>
+<h3>11.3 环境变量</h3>
+<p>过程<code>getenv</code>返回操作系统环境变量的设定值，如：</p>
+<pre><code class="lang-scheme">(getenv "HOME")
+=>  "/home/dorai"
+
+(getenv "SHELL")
+=>  "/bin/bash"</code></pre>
+<hr>
+<p><a href="#a1" name="abbr1">[1]</a> MzScheme在<code>process</code>库中提供了<code>system</code>过程。使用<code>(require (lib "process.ss"))</code>来加载这个库。</p>
+  </body>
+</html>

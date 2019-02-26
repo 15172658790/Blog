@@ -1,0 +1,18 @@
+const x = 63, y = 98;
+
+procedure gcd;
+var f, g;
+begin
+  f := x;
+  g := y;
+  while f != g do
+  begin
+    if f < g then g := g - f;
+    if g < f then f := f - g;
+  end;
+end;
+
+begin
+  call gcd;
+  print f;
+end.

@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第三章 Forms代码结构</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第三章 Forms代码结构</h1>
+<p>读者们会发现迄今为止我们提供的Scheme示例程序也都是s-表达式。这对所有的Scheme程序来说都适用：程序是数据。</p>
+<p>因此，字符数据<code>#\c</code>也是一个程序，或一个代码结构。我们将使用更通用的说法代码结构而不是程序，这样我们也可以处理程序片段。</p>
+<p>Scheme计算代码结构<code>#\c</code>得到结果<code>#\c</code>，因为<code>#\c</code>可以自运算。但不是所有的s-表达式都可以自运算。比如symbol 表达式 <code>xyz</code>运算得到的结果是<code>xyz</code>这个变量所承载的值；list 表达式<code>(string-&gt;number &quot;16&quot;)</code>运算的结果是数字<code>16</code>。(注：之前学过的list类型的数据都是类似<code>(1 2 3 4 5)</code>这样，所以称<code>(string-&gt;number &quot;16&quot;)</code>为列表s-表达式)</p>
+<p>也不是所有的s-表达式都是有效的程序。如果你直接输入点值对<code>(1 . 2)</code>，你将会得到一个错误。</p>
+<p>Scheme运行一个列表形式的代码结构时，首先要检测列表第一个元素，或列表头。如果这个列表头是一个过程，则代码结构的其余部分则被当成将传递给这个过程的参数集，而这个过程将接收这些参数并运算。</p>
+<p>如果这个代码结构的列表头是一个特殊的代码结构，则将会采用一种特殊的方式来运行。我们已经碰到过的特殊的代码结构有<code>begin</code>， <code>define</code>和 <code>set!</code>。</p>
+<p><code>begin</code>可以让它的子结构可以有序的运算，而最后一个子结构的结果将成为整个代码结构的运行结果。<code>define</code>会声明并会初始化一个变量。<code>set!</code> 可以给已经存在的变量重新赋值。</p>
+<h2>3.1 Procedures(过程)</h2>
+<p>我们已经见过了许多系统过程，比如，<code>cons</code>， <code>string-&gt;list</code>等。用户可以使用代码结构<code>lambda</code>来创建自定义的过程。例如，下面定义了一个过程可以在它的参数上加上2：</p>
+<pre><code class="lang-scheme">(lambda (x) (+ x 2))</code></pre>
+<p>第一个子结构，<code>(x)</code>，是参数列表。其余的子结构则构成了这个过程执行体。这个过程可以像系统过程一样，通过传递一个参数完成调用：</p>
+<pre><code class="lang-scheme">((lambda (x) (+ x 2)) 5)
+=&gt;  7</code></pre>
+<p>如果我们希望能够多次调用这个相同的过程，我们可以每次使用<code>lambda</code>重新创建一个复制品，但我们有更好的方式。我们可以使用一个变量来承载这个过程：</p>
+<pre><code class="lang-scheme">(define add2
+  (lambda (x) (+ x 2)))</code></pre>
+<p>只要需要，我们就可以反复使用<code>add2</code>为参数加上2：</p>
+<pre><code class="lang-scheme">(add2 4) =&gt;  6
+(add2 9) =&gt;  11</code></pre>
+<p>译者注:定义过程还可以有另一种简单的方式，直接用define而不使用lambda来创建：</p>
+<pre><code class="lang-scheme">(define (add2 x)
+       (+ x 2))</code></pre>
+<h3>3.1.1 过程的参数</h3>
+<p><code>lambda</code> 过程的参数由它的第一个子结构（紧跟着<code>lambda</code>标记的那个结构）来定义。<code>add2</code>是一个单参数或一元过程，所以它的参数列表是只有一个元素的列表<code>(x)</code>。标记<code>x</code>作为一个承载过程参数的变量而存在。在过程体中出现的所有<code>x</code>都是指代这个过程的参数。对这个过程体来说x是一个局部变量。</p>
+<p>我们可以为两个参数的过程提供两个元素的列表做参数，通常都是为n个参数的过程提供n个元素的列表。下面是一个可以计算矩形面积的双参数过程。它的两个参数分别是矩形的长和宽。</p>
+<pre><code class="lang-scheme">(define area
+  (lambda (length breadth)
+    (* length breadth)))</code></pre>
+<p>我们看到<code>area</code>将它的参数进行相乘，系统过程<code>*</code>也可以实现相乘。我们可以简单的这样做：</p>
+<pre><code class="lang-scheme">(define area *)</code></pre>
+<h3>3.1.2 可变数量的参数（不定长参数）</h3>
+<p>有一些过程可以在不同的时候传给它不同个数的参数来完成调用。为了实现这样的过程，<code>lambda</code>表达式列表形式的参数要被替换成单个的符号。这个符号会像一个变量一样来承载过程调用时接收到的参数列表。</p>
+<p>通常，<code>lambda</code>的参数列表可以是一个列表构结<code>(x …)</code>，一个符号，或者<code>(x … . z)</code>这样的一个点对结构。</p>
+<p>当参数是一个点对结构时，在点之前的所有变量将一一对应过程调用时的前几个参数，点之后的那个变量会将剩余的参数值作为一个列表来承载。</p>
+<p><!-- 译者注：以下是几种可变参数的写法： -->
+
+
+<!-- ((lambda (x y z) -->
+<!--          (begin -->
+<!--             (display x) -->
+<!--             (newline) -->
+<!--             (display y) -->
+<!--             (newline) -->
+<!--             (display z) -->
+<!--             (newline) ) ) -->
+<!--             1 2 3) -->
+<!-- 和 -->
+<!-- (define (t x y z) -->
+<!--              (begin -->
+<!--                 (display x) -->
+<!--                 (newline) -->
+<!--                 (display y) -->
+<!--                 (newline) -->
+<!--                 (display z) -->
+<!--                 (newline) ) ) -->
+<!-- (t 1 2 3) -->
+<!-- 等价。 -->
+
+
+<!-- ((lambda x -->
+<!--          (begin -->
+<!--             (display x) ) ) -->
+<!--             1 2 3 4) -->
+<!-- 和 -->
+<!-- (define (t . x) -->
+<!--         (begin -->
+<!--            (display x) ) ) -->
+<!-- (t 1 2 3 4) -->
+<!-- 等价。 -->
+
+
+<!-- ((lambda (x . y) -->
+<!--          (begin -->
+<!--             (display x) -->
+<!--             (newline) -->
+<!--             (display y) -->
+<!--             (newline) ) ) -->
+<!--             1 2 3 4 5) -->
+<!-- 和 -->
+<!-- (define (t x . y) -->
+<!--         (begin -->
+<!--            (display x) -->
+<!--            (newline) -->
+<!--            (display y) -->
+<!--            (newline) ) ) -->
+<!-- (t 1 2 3 4 5) -->
+<!-- 等价。 -->
+
+
+</p>
+<h2>3.2 apply过程</h2>
+<p><code>apply</code>过程允许我们直接传递一个装有参数的list 给一个过程来完成对这个过程的批量操作。</p>
+<pre><code class="lang-scheme">(define x &#39;(1 2 3))
+
+(apply + x)
+=&gt;  6</code></pre>
+<p>通常，<code>apply</code>需要传递一个过程给它，后面紧接着是不定长参数，但最后一个参数值一定要是list。它会根据最后一个参数和中间其它的参数来构建参数列表。然后返回根据这个参数列表来调用过程得到的结果。例如:</p>
+<pre><code class="lang-scheme">(apply + 1 2 3 x)
+=&gt;  12</code></pre>
+<h2>3.3 顺序执行</h2>
+<p>我们使用<code>begin</code>这个特殊的结构来对一组需要有序执行的子结构来进行打包。许多Scheme的代码结构都隐含了<code>begin</code>。例如，我们定义一个三个参数的过程来输出它们，并用空格间格。一种正确的定义是：</p>
+<pre><code class="lang-scheme">(define display3
+  (lambda (arg1 arg2 arg3)
+    (begin
+      (display arg1)
+      (display &quot; &quot;)
+      (display arg2)
+      (display &quot; &quot;)
+      (display arg3)
+      (newline))))</code></pre>
+<p>在Scheme中，lambda的语句体都是隐式的<code>begin</code>代码结构。因此，<code>display3</code>语句体中的begin不是必须的，不写时也不会有什么影响。</p>
+<p><code>display3</code>更简化的写法是：</p>
+<pre><code class="lang-scheme">(define display3
+  (lambda (arg1 arg2 arg3)
+    (display arg1)
+    (display &quot; &quot;)
+    (display arg2)
+    (display &quot; &quot;)
+    (display arg3)
+    (newline)))</code></pre>
+
+    <!-- <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script> -->
+  </body>
+</html>

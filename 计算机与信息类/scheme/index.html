@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>译：Teach Yourself Scheme in Fixnum Days</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+    </head>
+
+
+  <body>
+    <h1>Scheme语言简明教程</h1>
+    <h3>译:Teach Yourself Scheme in Fixnum Days</h3>
+    <a href="https://github.com/songjinghe/TYS-zh-translation" title="markdown源码" target="_blank">View On GitHub</a>
+    |
+    <a href="https://github.com/songjinghe/TYS-zh-translation/archive/gh-pages.zip" title="HTML格式" target="_blank">下载中文翻译ZIP</a>
+    |
+    <a href="http://www.ccs.neu.edu/home/dorai/t-y-scheme/t-y-scheme.html" target="_blank">英文原文online</a>
+    |
+    <a href="https://github.com/songjinghe/TYS-zh-translation/issues" title="issue" target="_blank">反馈问题</a>
+
+    <p>这是一本在国外比较有名的Scheme编程语言的入门教材。本教材适合任何对Scheme编程语言感兴趣的人阅读，尤其是有其他编程语言（特别是动态语言）编程经验，希望快速了解Scheme的不同点并且快速上手写点东西的人。然而希望系统学习Scheme编程的学生仍然是本文的读者之一。</p>
+    <p>该教程中的大部分内容都能在常见的Scheme入门教材中找到，本教材中比较有特色的是关于<code>continuation</code>和<code>call/cc</code>的内容，这也是Scheme的一大特点。第十三章很详细的讲解了<code>continuation</code>和<code>call/cc</code>，十四十五章是它们的应用。然而由于本人理解不够深入，这部分（其实整个文章都是）翻译得不堪卒读，所以有问题请对照英文原文理解，也欢迎大家的<a href="https://github.com/songjinghe/TYS-zh-translation/issues" title="issue" target="_blank">反馈</a>！</p>
+
+    <p>2009年的时候<a href="http://www.cnblogs.com/heros/category/225196.html" target="_blank">heros</a>翻译了这篇文章的一部分（至第六章未完）。2010年的时候<a href="http://lispor.is-programmer.com/tag/Scheme%E7%AC%94%E8%AE%B0">lispor</a>写了一份本教程的读书笔记。2012年的时候又有人试图翻译这篇文章。不过后来貌似没有下文。Scheme的R5RS规范已经在2004年被译成了中文，而这篇实践性比较强的文章却没有完整的中文译版。所以自己翻译了一份（前六章基本是用的hero的版本），本人也是第一次接触Scheme，水平有限，大家多多包涵。</p>
+    
+    
+    <h3>目 录</h3>
+    <ul>
+      <li><a href="about.html" target="_blank">【译者】关于本文</a></li>
+      <li><a href="000-preface.html" target="_blank">前言</a></li>
+      <li><a href="010-enter-scheme.html" target="_blank">第一章：进入Scheme</a></li>
+      <li><a href="020-data-types.html" target="_blank">第二章：数据结构</a></li>
+      <li><a href="030-forms.html" target="_blank">第三章：代码结构</a></li>
+      <li><a href="040-conditionals.html" target="_blank">第四章：条件语句</a></li>
+      <li><a href="050-lexical-variables.html" target="_blank">第五章：词法变量</a></li>
+      <li><a href="060-recursion.html" target="_blank">第六章：递归</a></li>
+      <li><a href="070-io.html" title="多谢@何ufo的工作" target="_blank">第七章：输入输出</a></li>
+      <li><a href="080-macros.html" title="多谢@何ufo的工作" target="_blank">第八章：宏</a></li>
+      <li><a href="090-structures.html" title="多谢@何ufo的工作" target="_blank">第九章：结构</a></li>
+      <li><a href="100-alists-and-tables.html" title="多谢@何ufo的工作" target="_blank">第十章：关联列表和表格</a></li>
+      <li><a href="110-system-interface.html" title="多谢@何ufo的工作" target="_blank">第十一章：系统接口</a></li>
+      <li><a href="120-objects-and-classes.html" title="多谢@何ufo的工作" target="_blank">第十二章：对象和类</a></li>
+      <li><a href="130-jumps.html" title="这章纯粹是我自己翻译的，有看不明白的欢迎反馈" target="_blank">第十三章：跳转</a></li>
+      <li><a href="140-nondeterminism.html" title="translate on 20140722" target="_blank">第十四章：不确定性</a></li>
+      <li><a href="150-engines.html" title="translate on 20140724" target="_blank">第十五章：引擎</a></li>
+      <li><a href="160-shell-scripts.html" title="translate on 20140724" target="_blank">第十六章：命令行脚本</a></li>
+      <li><a href="170-cgi-scripts.html" title="translate on 20140724" target="_blank">第十七章：CGI脚本</a></li>
+      <li><a href="200-appendix-a-scheme-dialects.html" title="done on 20140725" target="_blank">附录 A：Scheme方言</a></li>
+      <li><a href="300-appendix-b-dos-batch-file.html" title="done on 2014076" target="_blank">附录 B：DOS批处理</a></li>
+      <li><a href="400-appendix-c-numerical-techniques.html" title="complete on 20140803" target="_blank">附录 C：数值运算</a></li>
+      <li><a href="500-appendix-d-clock-for-infinity.html" title="done on 20140806" target="_blank">附录 D：可设为infinity的时钟</a></li>
+      <li><a href="600-appendix-e-references.html" title="done on 14/08/09" target="_blank">附录 E：参考文献</a></li>
+      <li><a href="700-appendix-f-index.html" title="done on 140809" target="_blank">附录 F：索引</a></li>
+      <li><a href="888-about-java-symbol-table.html" title="这个是在我毕设做Java符号表时给了我很多启发" target="_blank">无关的：论Java语言符号表设计时的一些问题</a></li>
+    </ul>
+    <h3>许可（License）</h3>
+    <p>本译文的发布遵循与英文原文相同的LICENSE(即 <a target="_blank" href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser General Public License</a>)。如有问题，请联系我。</p>
+    <p>This translated version is published under the same license(viz, the <a target="_blank" href="http://www.gnu.org/licenses/lgpl.html">LGPL license</a>) of the orginal english version. If you have any question, please contact me.</p>
+    <div id="clustrmaps-widget" style="margin-left:250px;"></div>
+    <script type="text/javascript">var _clustrmaps = {'url' : 'http://songjinghe.github.io', 'user' : 1144411, 'server' : '3', 'id' : 'clustrmaps-widget', 'version' : 1, 'date' : '2014-05-27', 'lang' : 'zh', 'corners' : 'square' };(function (){ var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = 'http://www3.clustrmaps.com/counter/map.js'; var x = document.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x);})();</script>
+    <noscript>
+        <a target="_blank" href="http://www3.clustrmaps.com/user/71011765b">
+            <img src="http://www3.clustrmaps.com/stats/maps-no_clusters/songjinghe.github.io-thumb.jpg" alt="Locations of visitors to this page" />
+        </a>
+    </noscript>
+</body>
+</html>

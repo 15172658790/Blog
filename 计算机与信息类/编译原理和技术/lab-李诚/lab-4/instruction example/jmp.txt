@@ -1,0 +1,6 @@
+PUT 3
+JMP 4
+INT 1
+
+INT 0
+JMP 2

@@ -1,0 +1,5 @@
+PUT 1
+PUT 0
+AND
+INT 0
+INT 1

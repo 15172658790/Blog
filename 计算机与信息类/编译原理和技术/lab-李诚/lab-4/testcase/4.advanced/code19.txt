@@ -1,0 +1,8 @@
+const a = 3;
+var c;
+begin
+  c := 0;
+  if a >= 3 || (a / (a - 3) = 3) then c := c + 1;
+  if !(a < 3 && a / (c - 1) = a * c) then c := c + 2;
+  print c;
+end.

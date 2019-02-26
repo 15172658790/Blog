@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第五章 词法变量</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1>第五章 词法变量</h1>
+<p>Scheme的变量有一定的词法作用域，即它们在程序代码中只对特定范围的代码结构可见。迄今为止我们所见过的全局变量也没有例外的：它们的作用域是整个程序，这也是一种特定的作用范围。</p>
+<p>我们也碰见过一些示例包含局部变量。它们都是lambda过程的参数，当过程被调用时这些变量会被赋值，而它们的作用域仅限于在过程的内部。例如：</p>
+<pre><code class="lang-scheme">(define x 9)
+(define add2 (lambda (x) (+ x 2)))
+
+
+x  =&gt;  9
+
+(add2 3) =&gt;  5
+(add2 x) =&gt;  11
+
+x  =&gt;  9</code></pre>
+<p>这里有一个全局变量<code>x</code>，还有一个局部变量<code>x</code>，就是在过程<code>add2</code>中那个字母<code>x</code>。全局变量<code>x</code>的值一直是9。第一次调用<code>add2</code>过程时，局部的<code>x</code>会被赋值为3，而第二次调用<code>add2</code>时，局部变量<code>x</code>的会被赋值为全局变量<code>x</code>的值，即<code>9</code>。</p>
+<p>当过程的调用结束时，全部变量<code>x</code>仍然是9。</p>
+<p>而<code>set!</code>代码结构可修改变量的赋值。</p>
+<pre><code class="lang-scheme">(set! x 20)</code></pre>
+<p>上面代码将全局变量<code>x</code>的值9修改为20，因为对于<code>set!</code>全局变量是可见的。如果<code>set!</code>是在<code>add2</code>过程体内被调用，那修改的就是局部变量<code>x</code>：</p>
+<pre><code class="lang-scheme">(define add2
+  (lambda (x)
+    (set! x (+ x 2))
+    x))</code></pre>
+<p>这里<code>set!</code>在局部变量<code>x</code>上加上2，并且会返回局部变量x的新值。(从结果来看，我们无法区分这个过程和先前的<code>add2</code>过程)。</p>
+<p>我们可以像先前一样使用全局的<code>x</code>做参数值来调用<code>add2</code>：</p>
+<pre><code class="lang-scheme">(add2 x) =&gt;  22</code></pre>
+<p>(记住全局变量x的值现在是20，而不是9!)</p>
+<p><code>add2</code>过程内的<code>set!</code>调用仅会影响局部变量x。尽管局部变量x被赋了全局变量x的值，但后者不会因为<code>set!</code>为局部变量<code>x</code>赋值而受影响。</p>
+<pre><code class="lang-scheme">x =&gt;  20</code></pre>
+<p>注意我们做这些讨论是因为我们为局部变量和全局变量使用了同样的标识<code>x</code>。在某些代码中，这个叫<code>x</code>的标识符指的是语法闭包中的局部<code>x</code>变量，这会暂时隐藏闭包外或全局变量<code>x</code>的值。例如，</p>
+<pre><code class="lang-scheme">(define counter 0)
+
+(define bump-counter
+  (lambda ()
+    (set! counter (+ counter 1))
+    counter))</code></pre>
+<p><code>bump-counter</code>是一个没有参数的过程(没有参数的过程也称作<code>thunk</code>). 它没有引入局部变量和参数，这样就不会隐藏任何值。在每次调用时，它会修改全局变量<code>counter</code>的值，让它增加1，然后返回它当前的值。下面是一些<code>bump-counter</code>的成功调用示例:</p>
+<pre><code class="lang-scheme">(bump-counter) =&gt;  1
+(bump-counter) =&gt;  2
+(bump-counter) =&gt;  3</code></pre>
+<h2>5.1 let 和 let*</h2>
+<p>并不是一定要显式的创建过程才可以创建局部变量。有个特殊的代码结构let可以创建一列局部变量以便在其结构体中使用:</p>
+<pre><code class="lang-scheme">(let ((x 1)
+      (y 2)
+      (z 3))
+  (list x y z))
+=&gt;  (1 2 3)</code></pre>
+<p>和<code>lambda</code>一样，在<code>let</code>结构体中，局部变量<code>x</code>（赋值为1）会暂时隐藏全局变量<code>x</code>（赋值为20）。</p>
+<p>局部变量<code>x</code>、<code>y</code>、<code>z</code>分别被赋值为1、2、3，这个初始化的过程并不作为<code>let</code>过程结构体的一部分。因此，在初始化时对<code>x</code>的引用都指向了全局变量<code>x</code>，而不是局部变量<code>x</code>。</p>
+<pre><code class="lang-scheme">(let ((x 1)
+      (y x))
+  (+ x y))
+=&gt;  21</code></pre>
+<p>上面代码中，因为局部变量<code>x</code>被赋值为1，而<code>y</code>被赋上了值为20的全局变量<code>x</code>。</p>
+<p>有时候，用<code>let</code>依次的创建局变量非常的方便，如果在初始化区域中可以用先创建的变量来为后创建的变量赋值也会非常方便。<code>let*</code>结构就可以这样做：</p>
+<pre><code class="lang-scheme">(let* ((x 1)
+       (y x))
+  (+ x y))
+=&gt;  2</code></pre>
+<p>在初始化y变量时的x，指的是前面刚创建好的变量x。
+这个例子完全等价于下面这个<code>let</code>嵌套的程序，更深了说，实际上就是<code>let</code>嵌套的缩写。</p>
+<pre><code class="lang-scheme">(let ((x 1))
+  (let ((y x))
+    (+ x y)))
+=&gt;  2</code></pre>
+<p>我们也可以把一个过程做为值赋给变量：</p>
+<pre><code class="lang-scheme">(let ((cons (lambda (x y) (+ x y))))
+  (cons 1 2))
+=&gt;  3</code></pre>
+<p>在这个<code>let</code>构结体中，变量<code>cons</code>将它的参数进行相加。而在<code>let</code>结构的外面，<code>cons</code>还是用来创建点对。</p>
+<h2>5.2 fluid-let</h2>
+<p>一个词法变量如果没有被隐藏，在它的作用域内一直都为可见状态。有时候，我们有必要将一个词法变量临时地设置为一个固定的值。为此我们可使用<code>fluid-let</code>结构(<code>fluid-let</code>是一个非标准的特殊结构。可参见8.3，在Scheme中定义fluid-let)。</p>
+<pre><code class="lang-scheme">(fluid-let ((counter 99))
+  (display (bump-counter)) (newline)
+  (display (bump-counter)) (newline)
+  (display (bump-counter)) (newline))</code></pre>
+<p>这和<code>let</code>看起来非常相像，但并不是暂时的隐藏了全局变量counter的值，而是在<code>fluid-let</code>执行体中临时的将全局变量<code>counter</code>的值设置为了99直到执行体结束。因此执行体中的三句<code>display</code>产生了结果</p>
+<pre><code>100 
+101 
+102</code></pre>
+<p>当<code>fluid-let</code>表达式计算结束后，全局变量<code>counter</code>会恢复成之前的的值。</p>
+<pre><code class="lang-scheme">counter =&gt;  3</code></pre>
+<p>注意<code>fluid-let</code>和<code>let</code>的效果完全不同。<code>fluid-let</code>不会和<code>let</code>一样产生一个新的变量。它会修改已经存的变量的值绑定，当<code>fluid-let</code>结束时这个修改也会结束。</p>
+<p>为了清楚的说明这一些，可以思考这个根据前一个示例用<code>let</code>替换<code>fluid-let</code>后的程序。这次的输出是</p>
+<pre><code>4
+5
+6</code></pre>
+<p>即，初始值为3的全局变量<code>counter</code>，被每一次<code>bump-counter</code>的调用更新。而新创建的初始值为99的词法变量<code>counter</code>并没有影响到<code>bump-counter</code>的执行，因为尽管<code>bump-counter</code>是在局部变量<code>counter</code>的作用域内被调用的，但<code>bump-counter</code>的结构体并不在这个作用域内。所以<code>bump-counter</code>中的<code>counter</code>仍然指的是全局变量<code>counter</code>，最后的值为6。</p>
+<pre><code class="lang-scheme">counter =&gt;  6</code></pre>
+
+    <!-- <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script> -->
+  </body>
+</html>

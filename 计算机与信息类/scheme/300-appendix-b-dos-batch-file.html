@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>附录B 在DOS中运行Scheme脚本</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+      <h1 id="-b-dos-scheme-">附录B 在DOS中运行Scheme脚本</h1>
+<p>DOS的脚本也叫做“批处理”。通常一个输出<code>Hello World!</code>的DOS批处理文件应该这样写：</p>
+<pre><code class="lang-shell">echo Hello, World!
+</code></pre>
+<p>这里用到了DOS的命令<code>echo</code>。脚本文件被命名为<code>hello.bat</code>，这样会被操作系统认为是可执行的。然后可以放入任一在<code>PATH</code>环境变量中的目录下。然后任何时候在DOS提示符下输入</p>
+<pre><code class="lang-shell">hello.bat
+</code></pre>
+<p>或者更简单的：</p>
+<pre><code class="lang-shell">hello
+</code></pre>
+<p>就能立即得到这句俗得不能再俗的问候。</p>
+<p>Scheme版本的<code>hello</code>批处理文件会用Scheme产生相同的输出，但是我们需要在文件中写一些东西来告诉DOS让它用Scheme来分析文件内容，而不是理解为它默认的脚本批处理语言。Scheme的批处理文件（也命名为<code>hello.bat</code>），内容如下：</p>
+<pre><code class="lang-bat">;@echo off 
+;goto :start 
+#| 
+:start 
+echo. > c:\_temp.scm 
+echo (load (find-executable-path "hello.bat" >> c:\_temp.scm 
+echo "hello.bat")) >> c:\_temp.scm 
+mzscheme -r c:\_temp.scm %1 %2 %3 %4 %5 %6 %7 %8 %9 
+goto :eof 
+|# 
+
+(display "Hello, World!") 
+(newline) 
+
+;:eof
+</code></pre>
+<p>到<code>|#</code>之前全部是标准的DOS批处理命令。后面是Scheme的问候代码。最后还有一行标准的DOS批处理，即<code>;:eof</code>。</p>
+<p>当用户在DOS提示符下输入<code>hello</code>时，DOS读取并将<code>hello.bat</code>作为一个普通的批处理文件来运行。第一行，<code>;@echo off</code>，关闭了命令运行时产生的输出――我们不想让大量冗余信息淹没我们脚本产生的输出。第二行，<code>;goto :start</code>，让脚本的执行跳转到标号<code>:start</code>即第四行。后面接着的<code>echo</code>行创建了一个叫<code>c:\_temp.scm</code>的Scheme临时文件，其内容如下：</p>
+<pre><code class="lang-scheme">(load (find-executable-path "hello.bat" "hello.bat"))
+</code></pre>
+<p>下一个批处理命令调用MzScheme。<code>-r</code>选项加载Scheme文件<code>c:\_temp.scm</code>。所有的参数（在这个例子里没有）可以在Scheme中通过<code>argv</code>向量来获得。这个调用的Scheme会对我们的脚本进行求值，我们下面会看到。Scheme执行返回后，我们仍然需要让批处理文件正常地结束（否则就会碰到它不认识的Scheme代码了）。下一个批处理命令是<code>goto :eof</code>，这会让控制流跳过所有的Scheme代码，到达文件末尾，也就是包含<code>;:eof</code>标签的一行。然后脚本结束运行。</p>
+<p>现在我们知道如何让Scheme来执行它的那部分代码，即运行嵌入在批处理文件中的Scheme表达式。载入<code>c:\_temp.scm</code>会使Scheme找到<code>hello.bat</code>文件的绝对路径（用<code>find-executable-path</code>过程），然后载入<code>hello.bat</code>。</p>
+<p>因此，Scheme脚本文件现在会以Scheme文件来运行，文件中的Scheme表达式可以通过向量<code>argv</code>来访问脚本的原始参数。</p>
+<p>现在Scheme略过脚本中的批处理命令。这是因为这些批处理命令要么以分号开头，要么用<code>#|...|#</code>包裹，这在Scheme看来是注释。</p>
+<p>文件剩下的部分当然是Scheme代码，因此表达式被依次求值（最后的表达式<code>;:eof</code>是一个Scheme注释，因此没有关系）总之所有的表达式被求值后，Scheme会退出。</p>
+<p>综上所述，在DOS提示符下输入hello会产生</p>
+<pre><code>Hello, World!
+</code></pre><p>并返回DOS提示符。</p>
+  </body>
+</html>

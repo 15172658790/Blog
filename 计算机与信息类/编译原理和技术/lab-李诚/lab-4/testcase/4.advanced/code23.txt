@@ -1,0 +1,11 @@
+var i;
+
+procedure p(x);
+begin
+  i := 2 * x;
+end;
+
+begin
+  call p(3);
+  print i;
+end.

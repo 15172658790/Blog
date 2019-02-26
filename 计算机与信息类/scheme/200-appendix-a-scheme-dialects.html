@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>附录 A Scheme方言</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1 id="-a-scheme-">附录 A Scheme方言</h1>
+<p>所有主要的Scheme方言都实现了R5RS规范。如果只使用R5RS中规定的功能，我们就能写出在这些方言中都能正常运行的代码。然而R5RS可能是为了更好的统一性，或是由于不可避免的系统依赖，在一些通用编程中无法忽略的重要问题上没有给出标准。因此这些Scheme方言不得不用一种特殊的非标准手段来解决这些问题。</p>
+<p>本书使用了Scheme的MzScheme方言，因此也使用了一些非标准的特性。以下是本书中所有非标准的、依赖于MzScheme提供的特性：</p>
+<ul>
+<li>命令行（包括打开一个侦听会话以及Shell脚本）</li>
+<li><code>define-macro</code></li>
+<li><code>delete-file</code></li>
+<li><code>file-exists?</code></li>
+<li><code>file‑or‑directory‑modify‑seconds</code></li>
+<li><code>fluid‑let</code></li>
+<li><code>gensym</code></li>
+<li><code>getenv</code></li>
+<li><code>get‑output‑string</code></li>
+<li><code>load‑relative</code></li>
+<li><code>open‑input‑string</code></li>
+<li><code>open‑output‑string</code></li>
+<li><code>read‑line</code></li>
+<li><code>reverse!</code></li>
+<li><code>system</code></li>
+<li><code>unless</code></li>
+<li><code>when</code></li>
+</ul>
+<p>以上这些命令中除了<code>define-macro</code>和<code>system</code>外都是在MzScheme的默认环境中就有的。而这两个缺少的则可以在MzScheme的标准库中找到，通过以下方式显式地加载。</p>
+<pre><code class="lang-scheme">(require (lib "defmacro.ss")) ;provides define-macro
+(require (lib "process.ss"))  ;provides system
+</code></pre>
+<p>另外还可以把这两段代码放在MzScheme的初始化文件中（在Unix系统下是用户家目录下的<code>.mzschemerc</code>文件）。</p>
+<p>一些非标准的特性（如<code>file-exists?</code>和<code>delete-file</code>）事实上在很多Scheme实现中已经是“标准”的特性了。另一些特性（如<code>when</code>和<code>unless</code>）或多或少有种“插件”式的定义（在本书中给出），因此可以在任何不具备这些过程的Scheme中加载。其他的需要针对每种方言来定义（如<code>load-relative</code>）。</p>
+<p>本章描述了如何给你使用的Scheme方言加上本书中用到的这些非标准特性。想要了解更多关于你使用的Scheme方言，请参考其实现者提供的文档（附录E）。</p>
+<h2 id="a-1-">A.1 调用和初始化文件</h2>
+<p>很多Scheme方言就像MzScheme一样都会从用户的家目录中载入初始化文件。我们可以把非标准功能的定义都放到这个初始化文件中，这样非常方便。比如，非标准过程<code>file-or-directory-modify-seconds</code>可以添加到Guile语言中，只要把下面的代码放到Guile的初始化文件（<code>~/.guile</code>）中即可：</p>
+<pre><code class="lang-scheme">(define file-or-directory-modify-seconds
+  (lambda (f)
+    (vector-ref (stat f) 9)))
+</code></pre>
+<p>另外，不同的Scheme方言有他们自己的不同的命令来启动对应的侦听器。下面的表格列出了不同Scheme方言对应的启动命令和初始化文件位置：</p>
+<p><table><tr><td><span style="margin-left: 2em"> </span><b>Scheme方言名称</b>  </td><td>   <b>可执行命令</b>  </td><td align="center">   <b>初始化文件</b>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Bigloo  </td><td>   <code class=verbatim>bigloo</code>  </td><td>   <code class=verbatim>~/.bigloorc</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Chicken  </td><td>   <code class=verbatim>csi</code>  </td><td>   <code class=verbatim>~/.csirc</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Gambit  </td><td>   <code class=verbatim>gsi</code>  </td><td>   <code class=verbatim>~/gambc.scm</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Gauche  </td><td>   <code class=verbatim>gosh</code>  </td><td>   <code class=verbatim>~/.gaucherc</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Guile  </td><td>   <code class=verbatim>guile</code>  </td><td>   <code class=verbatim>~/.guile</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>Kawa  </td><td>   <code class=verbatim>kawa</code>  </td><td>   <code class=verbatim>~/.kawarc.scm</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>MIT Scheme (Unix)  </td><td>   <code class=verbatim>scheme</code>  </td><td>   <code class=verbatim>~/.scheme.init</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>MIT Scheme (Win)  </td><td>   <code class=verbatim>scheme</code>  </td><td>   <code class=verbatim>~/scheme.ini</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>MzScheme (Unix, Mac OS X)  </td><td>   <code class=verbatim>mzscheme</code>  </td><td>    <code class=verbatim>~/.mzschemerc</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>MzScheme (Win, Mac OS Classic)  </td><td>   <code class=verbatim>mzscheme</code>  </td><td>   <code class=verbatim>~/mzschemerc.ss</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>SCM  </td><td>   <code class=verbatim>scm</code>  </td><td>   <code class=verbatim>~/ScmInit.scm</code>  </td></tr>
+<tr><td><span style="margin-left: 2em"> </span>STk  </td><td>   <code class=verbatim>snow</code>  </td><td>   <code class=verbatim>~/.stkrc</code>  </td></tr>
+</table>
+
+</p>
+<h2 id="a-2-shell-">A.2 Shell脚本</h2>
+<p>使用Guile编写的Shell脚本的初始行差不多应该是：</p>
+<pre><code class="lang-shell">":";exec guile -s $0 "$@"
+</code></pre>
+<p>在Guile脚本中，调用过程<code>(command-line)</code>会以列表的形式返回脚本的名称和参数。如果只需要参数，只需要获得列表的<code>cdr</code>部分即可。</p>
+<p>用Gauche编写的Shell脚本以：</p>
+<pre><code class="lang-shell">":"; exec gosh -- $0 "$@"
+</code></pre>
+<p>开头。在脚本中变量<code>*argv*</code>中保存着脚本的参数列表。</p>
+<p>用SCM编写的Shell脚本以：</p>
+<pre><code class="lang-shell">":";exec scm -l $0 "$@"
+</code></pre>
+<p>开头。脚本中变量<code>*argv*</code>保存着一个列表，列表中包括Scheme可执行文件的名称，脚本的名称，<code>-l</code>这个选项，还有脚本的参数。如果只需要参数，对列表执行<code>cdddr</code>即可。</p>
+<p>STk的Shell脚本以：</p>
+<pre><code class="lang-shell">":";exec snow -f $0 "$@"
+</code></pre>
+<p>开头。在脚本中变量<code>*argv*</code>中保存着脚本的参数列表。</p>
+<h2 id="a-3-define-macro-">A.3 <code>define-macro</code></h2>
+<p>本文中使用的<code>define-macro</code>宏在Scheme的很多方言如Bigloo，Chicken，Gambit，Gauche，Guile，MzScheme和Pocket中都有定义。在其他Scheme方言中定义宏的方式基本上是相同的。本节将指出其他Scheme方言是如何表示如下一段代码片段的：</p>
+<pre><code class="lang-scheme">(define-macro MACRO-NAME
+  (lambda MACRO-ARGS
+    MACRO-BODY ...))
+</code></pre>
+<p>在MIT Scheme第7.7.1或更高版本中，上述代码被写为：</p>
+<pre><code class="lang-scheme">(define-syntax MACRO-NAME
+  (rsc-macro-transformer
+    (let ((xfmr (lambda MACRO-ARGS MACRO-BODY ...)))
+      (lambda (e r)
+        (apply xfmr (cdr e))))))
+</code></pre>
+<p>在老版本的MIT Scheme中：</p>
+<pre><code class="lang-scheme">(syntax-table-define system-global-syntax-table 'MACRO-NAME
+  (macro MACRO-ARGS
+    MACRO-BODY ...))
+</code></pre>
+<p>在SCM和Kawa中：</p>
+<pre><code class="lang-scheme">(defmacro MACRO-NAME MACRO-ARGS
+  MACRO-BODY ...)
+</code></pre>
+<p>在STk中：</p>
+<pre><code class="lang-scheme">(define-macro (MACRO-NAME . MACRO-ARGS)
+  MACRO-BODY ...)
+</code></pre>
+<h2 id="a-4-load-relative-">A.4 <code>load-relative</code></h2>
+<p>过程<code>load-relative</code>可以在Guile中如下定义：</p>
+<pre><code class="lang-scheme">(define load-relative
+  (lambda (f)
+    (let* ((n (string-length f))
+           (full-pathname?
+             (and (> n 0)
+                  (let ((c0 (string-ref f 0)))
+                    (or (char=? c0 #\/)
+                        (char=? c0 #\~))))))
+      (basic-load
+        (if full-pathname? f
+            (let ((clp (current-load-port)))
+              (if clp
+                  (string-append
+                    (dirname (port-filename clp)) "/" f)
+                  f)))))))
+</code></pre>
+<p>在SCM中可以这样写：</p>
+<pre><code class="lang-scheme">(define load-relative
+  (lambda (f)
+    (let* ((n (string-length f))
+           (full-pathname?
+            (and (> n 0)
+                 (let ((c0 (string-ref f 0)))
+                   (or (char=? c0 #\/)
+                       (char=? c0 #\~))))))
+    (load (if (and *load-pathname* full-pathname?)
+              (in-vicinity (program-vicinity) f)
+              f)))))
+</code></pre>
+<p>对于STk，下面的<code>load-relative</code>过程仅在没有使用<code>load</code>过程时生效：</p>
+<pre><code class="lang-scheme">(define *load-pathname* #f)
+
+(define stk%load load)
+
+(define load-relative
+  (lambda (f)
+    (fluid-let ((*load-pathname*
+                  (if (not *load-pathname*) f
+                      (let* ((n (string-length f))
+                             (full-pathname?
+                               (and (> n 0)
+                                    (let ((c0 (string-ref f 0)))
+                                      (or (char=? c0 #\/)
+                                          (char=? c0 #\~))))))
+                        (if full-pathname? f
+                            (string-append
+                              (dirname *load-pathname*)
+                              "/" f))))))
+      (stk%load *load-pathname*))))
+
+(define load
+  (lambda (f)
+    (error "Don't use load.  Use load-relative instead.")))
+</code></pre>
+<hr>
+<p>我们使用<code>~/filename</code>表示用户家目录中被调用的文件。</p>
+  </body>
+</html>

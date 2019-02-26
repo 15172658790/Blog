@@ -1,0 +1,1 @@
+- [笨办法学 python](https://legacy.gitbook.com/book/wizardforcel/lpthw/details)

@@ -1,0 +1,24 @@
+var in, out;
+
+procedure F;
+var inn, outt;
+begin
+  if in = 0 then out := 1;
+  if in = 1 then out := 1;
+  if in > 1 then
+  begin
+    inn := in;
+    in := inn - 1;
+    call F;
+    outt := out;
+    in := inn - 2;
+    call F;
+    out := out + outt;
+  end; 
+end;
+
+begin
+  in := 7;
+  call F;
+  print out;
+end.

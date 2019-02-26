@@ -1,0 +1,8 @@
+const m = -2;
+var x;
+begin
+  x := 0;
+  if x - 1 < -3 then x := x + 1;
+  x := ((x - 2) * (-3) - m) / -4;
+  print x;
+end.

@@ -1,0 +1,10 @@
+procedure F(n);
+begin
+  if n = 0 then return 1;
+  if n = 1 then return 1;
+  if n > 1 then return call F(n-1) + call F(n-2);
+end;
+
+begin
+  print (call F(7));
+end.

@@ -1,0 +1,21 @@
+var in, out;
+
+procedure fact;
+var inn;
+begin
+  if in = 0 then out := 1;
+  if in > 0 then
+  begin
+    inn := in;
+    in := in - 1;
+    call fact;
+    out := out * inn;
+  end; 
+end;
+
+
+begin
+  in := 7;
+  call fact;
+  print out;
+end.

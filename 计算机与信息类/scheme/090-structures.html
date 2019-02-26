@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第九章 结构</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1 id="-">第九章 结构</h1>
+<p>自然分组的数据被称为结构。我们可以使用Scheme提供的复合数据结构如向量和列表来表示一种“结构”。例如：我们正在处理与树木相关的一组数据。数据（或者叫字段<code>field</code>）中的单个元素包括：高度，周长，年龄，树叶形状和树叶颜色共5个字段。这样的数据可以表示为5元向量。这些字段可以利用<code>vector-ref</code>访问，或使用<code>vector-set!</code>修改。尽管如此，我们仍然不希望记忆向量索引编号与字段的对于关系，这将是一个费力不讨好而且容易出错的事情，尤其是随着时间的流逝，一些字段被加进来，而另一些字段会被删掉。</p>
+<p>因此我们使用Scheme的宏<code>defstruct</code>去定义一个<code>结构</code>，基本上你可以把它当作一种向量，不过它提供了很多方法诸如创建<code>结构</code>实例、访问或修改它的字段等等。因此，我们的树结构应这样定义：</p>
+<pre><code class="lang-scheme">(defstruct tree height girth age leaf-shape leaf-color)
+</code></pre>
+<p>这样它自动生成了一个名为<code>make-tree</code>的构造过程，以及每个字段的访问方法，命名为<code>tree.height</code>，<code>tree.girth</code>等等。构造方法的使用方法如下：</p>
+<pre><code class="lang-scheme">(define coconut 
+  (make-tree 'height 30
+             'leaf-shape 'frond
+             'age 5))
+</code></pre>
+<p>这个构造函数的参数以成对的形式出现，字段名后面紧跟着其初始值。这些字段能以任意顺序出现，或者不出现——如果字段的值没有定义的话。</p>
+<p>访问过程的调用如下所示：</p>
+<pre><code class="lang-scheme">(tree.height coconut) =>  30
+(tree.leaf-shape coconut) =>  frond
+(tree.girth coconut) =>  <undefined>
+</code></pre>
+<p><code>tree.girth</code>存取程序返回一个未定义的值，因为我们没有为<code>coconut</code>这个<code>tree</code>结构指定<code>girth</code>的值。</p>
+<p>修改过程的调用如下所示：</p>
+<pre><code class="lang-scheme">(set!tree.height coconut 40)
+(set!tree.girth coconut 10)
+</code></pre>
+<p>如果我们现在重新调用访问过程去访问这些字段，我们会得到新的值：</p>
+<pre><code class="lang-scheme">(tree.height coconut) =>  40
+(tree.girth coconut) =>  10
+</code></pre>
+<h2 id="9-1-">9.1 默认初始化</h2>
+<p>我们可以在定义结构时进行一些初始化的设置，而不是在每个实例中都进行初始化。因此，我们假定<code>leaf-shape</code>和<code>leaf-color</code>在默认情况下分别为<code>frond</code>和<code>green</code>。我们可以在调用make-tree时通过显式的初始化来覆盖掉这些默认值，或者在创建一个结构实例后使用上面提到的字段修改过程：</p>
+<pre><code class="lang-scheme">(defstruct tree height girth age
+                (leaf-shape 'frond)
+                (leaf-color 'green))
+
+(define palm (make-tree 'height 60))
+
+(tree.height palm) 
+=>  60
+
+(tree.leaf-shape palm) 
+=>  frond
+
+(define plantain 
+  (make-tree 'height 7
+             'leaf-shape 'sheet))
+
+(tree.height plantain) 
+=>  7
+
+(tree.leaf-shape plantain) 
+=>  sheet
+
+(tree.leaf-color plantain) 
+=>  green
+</code></pre>
+<h2 id="9-2-defstruct-">9.2 defstruct定义</h2>
+<p>宏<code>defstruct</code>的定义如下：</p>
+<pre><code class="lang-scheme">(define-macro defstruct
+  (lambda (s . ff)
+    (let ((s-s (symbol->string s)) (n (length ff)))
+      (let* ((n+1 (+ n 1))
+             (vv (make-vector n+1)))
+        (let loop ((i 1) (ff ff))
+          (if (<= i n)
+            (let ((f (car ff)))
+              (vector-set! vv i 
+                (if (pair? f) (cadr f) '(if #f #f)))
+              (loop (+ i 1) (cdr ff)))))
+        (let ((ff (map (lambda (f) (if (pair? f) (car f) f))
+                       ff)))
+          `(begin
+             (define ,(string->symbol 
+                       (string-append "make-" s-s))
+               (lambda fvfv
+                 (let ((st (make-vector ,n+1)) (ff ',ff))
+                   (vector-set! st 0 ',s)
+                   ,@(let loop ((i 1) (r '()))
+                       (if (>= i n+1) r
+                           (loop (+ i 1)
+                                 (cons `(vector-set! st ,i 
+                                          ,(vector-ref vv i))
+                                       r))))
+                   (let loop ((fvfv fvfv))
+                     (if (not (null? fvfv))
+                         (begin
+                           (vector-set! st 
+                               (+ (list-position (car fvfv) ff)
+                                  1)
+                             (cadr fvfv))
+                           (loop (cddr fvfv)))))
+                   st)))
+             ,@(let loop ((i 1) (procs '()))
+                 (if (>= i n+1) procs
+                     (loop (+ i 1)
+                           (let ((f (symbol->string
+                                     (list-ref ff (- i 1)))))
+                             (cons
+                              `(define ,(string->symbol 
+                                         (string-append
+                                          s-s "." f))
+                                 (lambda (x) (vector-ref x ,i)))
+                              (cons
+                               `(define ,(string->symbol
+                                          (string-append 
+                                           "set!" s-s "." f))
+                                  (lambda (x v) 
+                                    (vector-set! x ,i v)))
+                               procs))))))
+             (define ,(string->symbol (string-append s-s "?"))
+               (lambda (x)
+                 (and (vector? x)
+                      (eqv? (vector-ref x 0) ',s))))))))))
+</code></pre>
+
+</body>
+</html>

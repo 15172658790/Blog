@@ -1,0 +1,413 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十七章 CGI脚本</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1 id="-cgi-">第十七章 CGI脚本</h1>
+<p><font color="red"><b>（警告：缺乏适当安全防护措施的CGI脚本可能会让您的网站陷入危险状态。本文中的脚本只是简单的样例，不保证在真实网站上使用的安全性。）</font>
+</b>
+</p>
+<p>CGI脚本是驻留在Web服务器上的脚本，而且可以被客户端（浏览器）运行。客户端通过脚本的URL来访问脚本，就像访问普通页面一样。服务器识别出请求的URL是一个脚本，于是就运行该脚本。服务器如何识别特定的URL为脚本取决于服务器的管理员。在本文中我们假设脚本都存放在一个单独的文件夹，名为cgi-bin。因此，www.foo.org网站上的<code>testcgi.scm</code>脚本可以通过 <a href="http://www.foo.org/cgi-bin/testcgi.scm">http://www.foo.org/cgi-bin/testcgi.scm</a> 来访问。</p>
+<p>服务器以<code>nobody</code>用户的身份来运行脚本，不应当期望这个用户有<code>PATH</code>的环境变量或者该变量正确设置（这太主观了）。因此用Scheme编写的脚本的“引导行”会比我们在一般Scheme脚本中更加清楚才行。也就是说，下面这行代码：</p>
+<pre><code class="lang-shell">&quot;:&quot;;exec mzscheme -r $0 &quot;$@&quot;
+</code></pre>
+<p>隐式的假设有一个特定的shell（如bash），而且设置好了<code>PATH</code>变量，而mzscheme程序在PATH的路径里。对于CGI脚本，我们需要多写一些：</p>
+<pre><code class="lang-shell">#!/bin/sh
+&quot;:&quot;;exec /usr/local/bin/mzscheme -r $0 &quot;$@&quot;
+</code></pre>
+<p>这样指定了shell和Scheme可执行文件的绝对路径。控制从shell交接给Scheme的过程和普通脚本一致。</p>
+<h2 id="17-1-">17.1 例：显示环境变量</h2>
+<p>下面是一个Scheme编写的CGI脚本的示例，<code>testcgi.scm</code>。该文件会输出一些常用CGI环境变量的设置。这些信息作为一个新的，刚刚创建的页面返回给浏览器。返回的页面就是该CGI脚本向标准输出里写入的任何东西。这就是CGI脚本如何回应对它们的调用——通过返回给它们（客户端）一个新页面。</p>
+<p>注意脚本首先输出下面这行：</p>
+<pre><code>content-type: text/plain
+</code></pre><p>后面跟一个空行。这是Web服务器提供页面服务的标准方式。这两行不会在页面上显示出来。它们只是提醒浏览器下面将发送的页面是纯文本（也就是非标记）文字。这样浏览器就会恰当的显示这个页面了。如果我们要发送的页面是用HTML标记的，<code>content-type</code>就是<code>text/html</code>。</p>
+<p>下面是脚本<code>testcgi.scm</code>：</p>
+<pre><code class="lang-scheme">#!/bin/sh
+&quot;:&quot;;exec /usr/local/bin/mzscheme -r $0 &quot;$@&quot;
+
+;Identify content-type as plain text.
+
+(display &quot;content-type: text/plain&quot;) (newline)
+(newline)
+
+;Generate a page with the requested info.  This is
+;done by simply writing to standard output.
+
+(for-each
+ (lambda (env-var)
+   (display env-var)
+   (display &quot; = &quot;)
+   (display (or (getenv env-var) &quot;&quot;))
+   (newline))
+ &#39;(&quot;AUTH_TYPE&quot;
+   &quot;CONTENT_LENGTH&quot;
+   &quot;CONTENT_TYPE&quot;
+   &quot;DOCUMENT_ROOT&quot;
+   &quot;GATEWAY_INTERFACE&quot;
+   &quot;HTTP_ACCEPT&quot;
+   &quot;HTTP_REFERER&quot; ; [sic]
+   &quot;HTTP_USER_AGENT&quot;
+   &quot;PATH_INFO&quot;
+   &quot;PATH_TRANSLATED&quot;
+   &quot;QUERY_STRING&quot;
+   &quot;REMOTE_ADDR&quot;
+   &quot;REMOTE_HOST&quot;
+   &quot;REMOTE_IDENT&quot;
+   &quot;REMOTE_USER&quot;
+   &quot;REQUEST_METHOD&quot;
+   &quot;SCRIPT_NAME&quot;
+   &quot;SERVER_NAME&quot;
+   &quot;SERVER_PORT&quot;
+   &quot;SERVER_PROTOCOL&quot;
+   &quot;SERVER_SOFTWARE&quot;))
+</code></pre>
+<p><code>testcgi.scm</code>可以直接从浏览器上打开，URL是：</p>
+<p><a href="http://www.foo.org/cgi-bin/testcgi.scm">http://www.foo.org/cgi-bin/testcgi.scm</a></p>
+<p>此外，<code>testcgi.scm</code>也可以放在HTML文件的链接中，这样可以直接点击，如：</p>
+<pre><code class="lang-html">... To view some common CGI environment variables, click 
+<span class="hljs-tag">&lt;<span class="hljs-title">a</span> <span class="hljs-attribute">href</span>=<span class="hljs-value">"http://www.foo.org/cgi-bin/testcgi.scm"</span>&gt;</span>here<span class="hljs-tag">&lt;/<span class="hljs-title">a</span>&gt;</span>. 
+...
+</code></pre>
+<p>而一旦触发了<code>testcg.scm</code>，它就会生成一个包括环境变量设置的纯文本页面。下面是一个示例输出：</p>
+<pre><code>AUTH_TYPE = 
+CONTENT_LENGTH = 
+CONTENT_TYPE = 
+DOCUMENT_ROOT = /home/httpd/html 
+GATEWAY_INTERFACE = CGI/1.1 
+HTTP_ACCEPT = image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, */* 
+HTTP_REFERER = 
+HTTP_USER_AGENT = Mozilla/3.01Gold (X11; I; Linux 2.0.32 i586) 
+PATH_INFO = 
+PATH_TRANSLATED = 
+QUERY_STRING = 
+REMOTE_HOST = 127.0.0.1 
+REMOTE_ADDR = 127.0.0.1 
+REMOTE_IDENT = 
+REMOTE_USER = 
+REQUEST_METHOD = GET 
+SCRIPT_NAME = /cgi-bin/testcgi.scm 
+SERVER_NAME = localhost.localdomain 
+SERVER_PORT = 80 
+SERVER_PROTOCOL = HTTP/1.0 
+SERVER_SOFTWARE = Apache/1.2.4
+</code></pre><h2 id="17-2-">17.2 示例：显示选择的环境变量</h2>
+<p><code>testcgi.scm</code>没有从用户获得任何输入。一个更专注的脚本会从用户那里获得一个环境变量，然后输出这个变量的设置，此外不返回任何东西。为了做这个，我们需要一个机制把参数传递给CGI脚本。HTML的表单提供了这种功能。下面是完成这个目标的一个简单的HTML页面：</p>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-title">html</span>&gt;</span> 
+<span class="hljs-tag">&lt;<span class="hljs-title">head</span>&gt;</span> 
+<span class="hljs-tag">&lt;<span class="hljs-title">title</span>&gt;</span>Form for checking environment variables<span class="hljs-tag">&lt;/<span class="hljs-title">title</span>&gt;</span> 
+<span class="hljs-tag">&lt;/<span class="hljs-title">head</span>&gt;</span> 
+<span class="hljs-tag">&lt;<span class="hljs-title">body</span>&gt;</span> 
+
+<span class="hljs-tag">&lt;<span class="hljs-title">form</span> <span class="hljs-attribute">method</span>=<span class="hljs-value">get</span>  
+      <span class="hljs-attribute">action</span>=<span class="hljs-value">"http://www.foo.org/cgi-bin/testcgi2.scm"</span>&gt;</span> 
+Enter environment variable: <span class="hljs-tag">&lt;<span class="hljs-title">input</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">text</span> <span class="hljs-attribute">name</span>=<span class="hljs-value">envvar</span> <span class="hljs-attribute">size</span>=<span class="hljs-value">30</span>&gt;</span> 
+<span class="hljs-tag">&lt;<span class="hljs-title">p</span>&gt;</span> 
+
+<span class="hljs-tag">&lt;<span class="hljs-title">input</span> <span class="hljs-attribute">type</span>=<span class="hljs-value">submit</span>&gt;</span> 
+<span class="hljs-tag">&lt;/<span class="hljs-title">form</span>&gt;</span> 
+
+<span class="hljs-tag">&lt;/<span class="hljs-title">body</span>&gt;</span> 
+<span class="hljs-tag">&lt;/<span class="hljs-title">html</span>&gt;</span>
+</code></pre>
+<p>用户在文本框中输入希望的环境变量（如<code>GATEWAY_INTERFACE</code>）并点击提交按钮。这会把所有表单里的信息——这里，参数<code>envvar</code>的值是<code>GATEWAY_INTERFACE</code>——收集并发送到该表单对应的CGI脚本即<code>testcgi2.scm</code>。这些信息可以用两种方法来发送：</p>
+<ol>
+<li>如果表单的<code>method</code>属性是<code>GET</code>（默认），那么这些信息通过环境变量<code>QUERY_STRING</code>来传递给脚本</li>
+<li>如果表单的<code>method</code>属性是<code>POST</code>，那么这些信息会在稍后发送到CGI脚本的标准输入中。</li>
+</ol>
+<p>我们的表单使用<code>QUERY_STRING</code>的方式。</p>
+<p>把信息从<code>QUERY_STRING</code>中提取出来并输出相应的页面是<code>testcgi2.scm</code>脚本的事情。</p>
+<p>发给CGI脚本的信息，不论通过环境变量还是通过标准输入，都被格式化为一串“参数/值”的键值对。键值对之间用<code>&amp;</code>字符分隔开。每个键值对中参数的名字在前面而且与参数值之间用<code>=</code>分开。这种情况下，只有一个键值对，即<code>envvar=GATEWAY_INTERFACE</code>。</p>
+<p>下面是<code>testcgi2.scm</code>脚本：</p>
+<pre><code class="lang-scheme">#!/bin/sh
+&quot;:&quot;;exec /usr/local/bin/mzscheme -r $0 &quot;$@&quot;
+
+(display &quot;content-type: text/plain&quot;) (newline)
+(newline)
+
+;string-index returns the leftmost index in string s
+;that has character c
+
+(define string-index
+  (lambda (s c)
+    (let ((n (string-length s)))
+      (let loop ((i 0))
+        (cond ((&gt;= i n) #f)
+              ((char=? (string-ref s i) c) i)
+              (else (loop (+ i 1))))))))
+
+;split breaks string s into substrings separated by character c
+
+(define split
+  (lambda (c s)
+    (let loop ((s s))
+      (if (string=? s &quot;&quot;) &#39;()
+          (let ((i (string-index s c)))
+            (if i (cons (substring s 0 i)
+                        (loop (substring s (+ i 1)
+                                         (string-length s))))
+                (list s)))))))
+
+(define args
+  (map (lambda (par-arg)
+         (split #\= par-arg))
+       (split #\&amp; (getenv &quot;QUERY_STRING&quot;))))
+
+(define envvar (cadr (assoc &quot;envvar&quot; args)))
+
+(display envvar)
+(display &quot; = &quot;)
+(display (getenv envvar))
+
+(newline)
+</code></pre>
+<p>注意辅助过程<code>split</code>把<code>QUERY_STRING</code>用<code>&amp;</code>分隔为键值对并进一步用<code>=</code>把参数名和参数值分开。（如果我们是用<code>POST</code>方法，我们需要把参数名和参数值从标准输入中提取出来。）</p>
+<p><code>&lt;input type=text&gt;</code>和<code>&lt;input type=submit&gt;</code>是HTML表单的两个不同的输入标签。参考文献27来查看全部。</p>
+<h2 id="17-3-cgi-utilities-">17.3 CGI脚本相关问题（utilities）</h2>
+<p>在上面的例子中，参数名和参数值都假设没有包含<code>=</code>或<code>&amp;</code>字符。通常情况他们会包含。为了适应这种字符，而不会不小心把他们当成分割符，CGI参数传递机制要求所有除了字母、数字和下划线以外的“特殊”字符都要编码进行传输。空格被编码为<code>+</code>，其他的特殊字符被编码为3个字符的序列，包括一个<code>%</code>字符紧跟着这个字符的16进制码。因此，<code>20% + 30% = 50%, &amp;c.</code>会被编码为：</p>
+<pre><code>20%25+%2b+30%25+%3d+50%25%2c+%26c%2e
+</code></pre><p>（空格变成<code>+</code>；<code>%</code>变为<code>%25</code>；<code>+</code>变为<code>%2b</code>；<code>=</code>变为<code>%3d</code>；<code>,</code>变为<code>%2c</code>；<code>&amp;</code>变为<code>%26</code>；<code>.</code>变为<code>%2e</code>）</p>
+<p>除了把获得和解码表单的代码写在每个CGI脚本中，把这些函数放在一个库文件<code>cgi.scm</code>中。这样<code>testcgi2.scm</code>的代码写起来更紧凑：</p>
+<pre><code class="lang-scheme">#!/bin/sh
+&quot;:&quot;;exec /usr/local/bin/mzscheme -r $0 &quot;$@&quot;
+
+;Load the cgi utilities
+
+(load-relatve &quot;cgi.scm&quot;)
+
+(display &quot;content-type: text/plain&quot;) (newline)
+(newline)
+
+;Read the data input via the form
+
+(parse-form-data)
+
+;Get the envvar parameter
+
+(define envvar (form-data-get/1 &quot;envvar&quot;))
+
+;Display the value of the envvar
+
+(display envvar)
+(display &quot; = &quot;)
+(display (getenv envvar))
+(newline)
+</code></pre>
+<p>这个简短一些的CGI脚本用了两个定义在<code>cgi.scm</code>中的通用过程。<code>parse-form-data</code>过程读取用户通过表单提交的数据，包括参数和值。</p>
+<p><code>form-data-get/1</code>找到与特定参数关联的值。</p>
+<p><code>cgi.scm</code>定义了一个全局表叫<code>*form-data-table*</code>来存放表单数据。</p>
+<pre><code class="lang-scheme">;Load our table definitions
+
+(load-relative &quot;table.scm&quot;)
+
+;Define the *form-data-table*
+
+(define *form-data-table* (make-table &#39;equ string=?))
+</code></pre>
+<p>使用诸如<code>parse-form-data</code>等通用过程的一个好处是我们可以不用管用户是用那种方式（get或post）提交的数据。</p>
+<pre><code class="lang-scheme">(define parse-form-data
+  (lambda ()
+    ((if (string-ci=? (or (getenv &quot;REQUEST_METHOD&quot;) &quot;GET&quot;) &quot;GET&quot;)
+         parse-form-data-using-query-string
+         parse-form-data-using-stdin))))
+</code></pre>
+<p>环境变量<code>REQUEST_METHOD</code>表示使用那种方式传送表单数据。如果方法是<code>GET</code>，那么表单数据被作为字符串通过另一个环境变量<code>QUERY_STRING</code>传输。辅助过程<code>parse-form-data-using-query-string</code>用来拆散<code>QUERY_STRING</code>：</p>
+<pre><code class="lang-scheme">(define parse-form-data-using-query-string
+  (lambda ()
+    (let ((query-string (or (getenv &quot;QUERY_STRING&quot;) &quot;&quot;)))
+      (for-each
+       (lambda (par=arg)
+         (let ((par/arg (split #\= par=arg)))
+           (let ((par (url-decode (car par/arg)))
+                 (arg (url-decode (cadr par/arg))))
+             (table-put! 
+              *form-data-table* par
+              (cons arg 
+                    (table-get *form-data-table* par &#39;()))))))
+       (split #\&amp; query-string)))))
+</code></pre>
+<p>辅助过程<code>split</code>，和它的辅助过程<code>string-index</code>，在第二节中定义过了。正如之前提到的，输入的表单数据是一串用<code>&amp;</code>分割的键值对。每个键值对中先是参数名，然后是一个<code>=</code>号，后面是值。每个键值对都放到一个全局的表<code>*form-data-table*</code>里。</p>
+<p>每个参数名和参数值都被编码了，所以我们需要用<code>url-decode</code>过程来解码得到它们的真实表示。</p>
+<pre><code class="lang-scheme">(define url-decode
+  (lambda (s)
+    (let ((s (string-&gt;list s)))
+      (list-&gt;string
+       (let loop ((s s))
+         (if (null? s) &#39;()
+             (let ((a (car s)) (d (cdr s)))
+               (case a
+                 ((#\+) (cons #\space (loop d)))
+                 ((#\%) (cons (hex-&gt;char (car d) (cadr d))
+                              (loop (cddr d))))
+                 (else (cons a (loop d)))))))))))
+</code></pre>
+<p><code>+</code>被转换为空格，通过过程<code>hex-&gt;char</code>,<code>%xy</code>这种形式的词也被转换为其ascii编码是十六进制数<code>xy</code>的字符。</p>
+<pre><code class="lang-scheme">(define hex-&gt;char
+  (lambda (x y)
+    (integer-&gt;char
+     (string-&gt;number (string x y) 16))))
+</code></pre>
+<p>我们还需要一个处理POST方法传输数据的程序。辅助过程<code>parse-form-data-using-stdin</code>就是做这个的。</p>
+<pre><code class="lang-scheme">(define parse-form-data-using-stdin
+  (lambda ()
+    (let* ((content-length (getenv &quot;CONTENT_LENGTH&quot;))
+           (content-length
+             (if content-length
+                 (string-&gt;number content-length) 0))
+           (i 0))
+      (let par-loop ((par &#39;()))
+        (let ((c (read-char)))
+          (set! i (+ i 1))
+          (if (or (&gt; i content-length)
+                  (eof-object? c) (char=? c #\=))
+              (let arg-loop ((arg &#39;()))
+                (let ((c (read-char)))
+                  (set! i (+ i 1))
+                  (if (or (&gt; i content-length)
+                          (eof-object? c) (char=? c #\&amp;))
+                      (let ((par (url-decode
+                                   (list-&gt;string
+                                     (reverse! par))))
+                            (arg (url-decode
+                                   (list-&gt;string
+                                     (reverse! arg)))))
+                        (table-put! *form-data-table* par
+                          (cons arg (table-get *form-data-table*
+                                      par &#39;())))
+                        (unless (or (&gt; i content-length)
+                                    (eof-object? c))
+                          (par-loop &#39;())))
+                      (arg-loop (cons c arg)))))
+              (par-loop (cons c par))))))))
+</code></pre>
+<p>POST方法通过脚本的标准输入传输表单数据。传输的字符数放在环境变量<code>CONTENT_LENGTH</code>里。<code>parse-form-data-using-stdin</code>从标准输入读取对应的字符，也像之前那样设置<code>*form-data-table*</code>，保证参数名和值被解码。</p>
+<p>剩下就是从<code>*form-data-table*</code>取回特定参数的值。主要这个这个表中每个参数都关联着一个列表，这是为了适应一个参数多个值的情况。<code>form-data-get</code>取回一个参数对应的所有值。如果只有一个值，就返回这个值。</p>
+<pre><code class="lang-scheme">(define form-data-get
+  (lambda (k)
+    (table-get *form-data-table* k &#39;())))
+</code></pre>
+<p><code>form-data-get/1</code>返回一个参数的第一个（或最重要的）值。</p>
+<pre><code class="lang-scheme">(define form-data-get/1
+  (lambda (k . default)
+    (let ((vv (form-data-get k)))
+      (cond ((pair? vv) (car vv))
+            ((pair? default) (car default))
+            (else &quot;&quot;)))))
+</code></pre>
+<p>在我们目前的例子当中，CGI脚本都是生成纯文本，通常我们希望生成一个HTML页面。把CGI脚本和HTML表单结合起来生成一系列带有表单的HTML页面是很常见的。把不同方法的响应代码放在一个CGI脚本里也是很常见的。不论任何情况，有一些辅助过程把字符串输出为HTML格式（即，把HTML特殊字符进行编码））都是很有帮助的：</p>
+<pre><code class="lang-scheme">(define display-html
+  (lambda (s . o)
+    (let ((o (if (null? o) (current-output-port)
+                 (car o))))
+      (let ((n (string-length s)))
+        (let loop ((i 0))
+          (unless (&gt;= i n)
+            (let ((c (string-ref s i)))
+              (display
+               (case c
+                 ((#\&lt;) &quot;&amp;lt;&quot;)
+                 ((#\&gt;) &quot;&amp;gt;&quot;)
+                 ((#\&quot;) &quot;&amp;quot;&quot;)
+                 ((#\&amp;) &quot;&amp;amp;&quot;)
+                 (else c)) o)
+              (loop (+ i 1)))))))))
+</code></pre>
+<h2 id="17-4-cgi-">17.4 一个CGI做的计算器</h2>
+<p>下面是一个CGI计算器的脚本，<code>cgicalc.scm</code>，使用了Scheme任意精度的算术功能。</p>
+<pre><code class="lang-scheme">#!/bin/sh
+&quot;:&quot;;exec /usr/local/bin/mzscheme -r $0
+
+;Load the CGI utilities
+(load-relative &quot;cgi.scm&quot;)
+
+(define uhoh #f)
+
+(define calc-eval
+  (lambda (e)
+    (if (pair? e)
+        (apply (ensure-operator (car e))
+               (map calc-eval (cdr e)))
+        (ensure-number e))))
+
+(define ensure-operator
+  (lambda (e)
+    (case e
+      ((+) +)
+      ((-) -)
+      ((*) *)
+      ((/) /)
+      ((**) expt)
+      (else (uhoh &quot;unpermitted operator&quot;)))))
+
+(define ensure-number
+  (lambda (e)
+    (if (number? e) e
+        (uhoh &quot;non-number&quot;))))
+
+(define print-form
+  (lambda ()
+    (display &quot;&lt;form action=\&quot;&quot;)
+    (display (getenv &quot;SCRIPT_NAME&quot;))
+    (display &quot;\&quot;&gt;
+  Enter arithmetic expression:&lt;br&gt;
+  &lt;input type=textarea name=arithexp&gt;&lt;p&gt;
+  &lt;input type=submit value=\&quot;Evaluate\&quot;&gt;
+  &lt;input type=reset value=\&quot;Clear\&quot;&gt;
+&lt;/form&gt;&quot;)))
+
+(define print-page-begin
+  (lambda ()
+    (display &quot;content-type: text/html
+
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;A Scheme Calculator&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;&quot;)))
+
+(define print-page-end
+  (lambda ()
+    (display &quot;&lt;/body&gt;
+&lt;/html&gt;&quot;)))
+
+(parse-form-data)
+
+(print-page-begin)
+
+(let ((e (form-data-get &quot;arithexp&quot;)))
+  (unless (null? e)
+    (let ((e1 (car e)))
+      (display-html e1)
+      (display &quot;&lt;p&gt;
+  =&amp;gt;&amp;nbsp;&amp;nbsp;&quot;)
+      (display-html
+       (call/cc
+        (lambda (k)
+          (set! uhoh
+                (lambda (s)
+                  (k (string-append &quot;Error: &quot; s))))
+          (number-&gt;string
+           (calc-eval (read (open-input-string (car e))))))))
+      (display &quot;&lt;p&gt;&quot;))))
+
+(print-form)
+(print-page-end)
+</code></pre>
+
+  </body>
+</html>
+

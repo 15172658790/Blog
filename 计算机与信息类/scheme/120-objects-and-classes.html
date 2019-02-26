@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+  <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Language" content="zh-CN" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+        <meta name="author" content="songjinghe" />
+        <meta name="Copyright" content="GNU Lesser General Public License" />
+        <meta name="description" content="Teach Yourself Scheme in Fixnum Days的简体中文译版" />
+        <meta name="keywords" content="scheme,教程" />
+        <title>第十二章 对象和类</title>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <script>var _hmt=_hmt||[];(function(){var hm=document.createElement("script");hm.src="//hm.baidu.com/hm.js?379b64254bb382c4fa11fad6cb4e98de";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+        <script type="text/javascript">document.write(unescape("%3Cspan style='display:none' id='cnzz_stat_icon_1253043874'%3E%3C/span%3E%3Cscript src='http://s19.cnzz.com/z_stat.php%3Fid%3D1253043874' type='text/javascript'%3E%3C/script%3E"));</script>
+  </head>
+
+
+  <body>
+<h1 id="-">第十二章 对象和类</h1>
+<p>类是描述了一组有共同行为的对象。由类描述的对象称为类的一个实例。类指定了其实例拥有的<code>属性</code>（原文为slot卡槽）的名称，而这些<code>属性</code>的值由实例自身来进行填充。类同样也指定了可以应用于其实例的<code>方法</code>(method)。属性值可以是任何形式，但方法的值必须是过程。</p>
+<p>类具有继承性。因此，一个类可以是另一个类的子类，我们称另一个类为它的父类。一个子类不仅有它自己“直接的”属性和方法，也会继承它的父类的所有属性和方法。如果一个类里有与其父类相同名称的属性和方法，那么仅保留子类的属性和方法。</p>
+<h2 id="12-1-">12.1 一个简单的对象系统</h2>
+<p>现在我们用Scheme来实现一个基本的对象系统。对于每个类，我们只允许有一个父类（单继承性）。如果我们不想指定一个父类，我们可以用<code>#t</code>作为一个“元”父类，既没有属性，也没有方法。而<code>#t</code>的父类则认为是它自己。</p>
+<p>作为一次尝试，用结构<code>standard-class</code>来定义类应该是很好的一种方式，用结构的字段来保存属性名字，父类以及方法。前两个字段我们分别叫做<code>slots</code>和<code>superclass</code>。我们将使用两个字段来描述方法，用<code>method-names</code>字段来描述类的方法的名称列表，用<code>method-vector</code>字段来保存一个矢量，里面放着类的方法<a name="1" href="#foot-note-1"><sup>1</sup></a>。这是<code>standard-class</code>的定义：</p>
+<pre><code class="lang-scheme">(defstruct standard-class
+  slots superclass method-names method-vector)
+</code></pre>
+<p>我们可以用<code>make-standard-class</code>，即<code>standard-class</code>的制造程序(见第九章)来创建一个新的类：</p>
+<pre><code class="lang-scheme">(define trivial-bike-class
+  (make-standard-class
+   'superclass #t
+   'slots '(frame parts size)
+   'method-names '()
+   'method-vector #()))
+</code></pre>
+<p>这是一个非常简单的类，更加复杂的类会有有意义的父类和方法，这需要在创建类时进行大量的初始化设置，我们希望把这些工作隐藏在创建类的过程中。因此我们定义一个<code>create-class</code>宏来对<code>make-standard-class</code>进行适当的调用。</p>
+<pre><code class="lang-scheme">(define-macro create-class
+  (lambda (superclass slots . methods)
+    `(create-class-proc
+      ,superclass
+      (list ,@(map (lambda (slot) `',slot) slots))
+      (list ,@(map (lambda (method) `',(car method)) methods))
+      (vector ,@(map (lambda (method) `,(cadr method)) methods)))))
+</code></pre>
+<p>我们稍后再介绍<code>create-class-proc</code>程序的定义。</p>
+<p><code>make-instance</code>程序创建类的一个实例，由类中包含的信息产生一个新的向量。实例向量的格式非常简单：它的第一个元素指向这个类（引用），余下的元素都是属性值。<code>make-instance</code>的第一个参数是一个类，后面的参数是成对的序列，而每一个“对”是属性名称和该实例中属性的值。</p>
+<pre><code class="lang-scheme">(define make-instance
+  (lambda (class . slot-value-twosomes)
+
+    ;Find `n', the number of slots in `class'.
+    ;Create an instance vector of length `n + 1',
+    ;because we need one extra element in the instance
+    ;to contain the class.
+
+    (let* ((slotlist (standard-class.slots class))
+           (n (length slotlist))
+           (instance (make-vector (+ n 1))))
+      (vector-set! instance 0 class)
+
+      ;Fill each of the slots in the instance
+      ;with the value as specified in the call to
+      ;`make-instance'.
+
+      (let loop ((slot-value-twosomes slot-value-twosomes))
+        (if (null? slot-value-twosomes) instance
+            (let ((k (list-position (car slot-value-twosomes) 
+                                    slotlist)))
+              (vector-set! instance (+ k 1) 
+                (cadr slot-value-twosomes))
+              (loop (cddr slot-value-twosomes))))))))
+</code></pre>
+<p>这是一个类的实例化的例子：</p>
+<pre><code class="lang-scheme">(define my-bike
+  (make-instance trivial-bike-class
+                 'frame 'cromoly
+                 'size '18.5
+                 'parts 'alivio))
+</code></pre>
+<p>这将<code>my-bike</code>变量绑定到如下所示的实例上。</p>
+<pre><code class="lang-scheme">#(&lt;trivial-bike-class&gt; cromoly 18.5 alivio)
+</code></pre>
+<p><code>&lt;trivial‑bike‑class&gt;</code>是一个Scheme数据(另一个向量)代表之前定义的<code>trivia-bike-class</code>的值。</p>
+<p><code>class-of</code>程序返回该实例对应的类：</p>
+<pre><code class="lang-scheme">(define class-of
+  (lambda (instance)
+    (vector-ref instance 0)))
+</code></pre>
+<p>这里假定<code>class-of</code>的参数是一个类的实例，即一个向量，其第一个元素指向<code>standard-class</code>的一些实例。我们可能想使<code>class-of</code>对我们给定的任何类型Scheme对象返回一个合适的值。</p>
+<pre><code class="lang-scheme">(define class-of
+  (lambda (x)
+    (if (vector? x)
+        (let ((n (vector-length x)))
+          (if (>= n 1)
+              (let ((c (vector-ref x 0)))
+                (if (standard-class? c) c #t))
+              #t))
+        #t)))
+</code></pre>
+<p>不是用<code>standard-class</code>创建的Scheme对象的类被认为是<code>#t</code>，即“元类”。</p>
+<p><code>slot-value</code>过程和<code>set!slot-value</code>过程用来访问和改变一个类实例的值：</p>
+<pre><code class="lang-scheme">(define slot-value
+  (lambda (instance slot)
+    (let* ((class (class-of instance))
+           (slot-index
+            (list-position slot (standard-class.slots class))))
+      (vector-ref instance (+ slot-index 1)))))
+
+(define set!slot-value
+  (lambda (instance slot new-val)
+    (let* ((class (class-of instance))
+           (slot-index
+            (list-position slot (standard-class.slots class))))
+      (vector-set! instance (+ slot-index 1) new-val))))
+</code></pre>
+<p>我们现在来解决<code>create-class-proc</code>的定义问题。这个过程接受一个父类，一个属性的列表，一个方法名称的列表和一个包含方法体的向量，并适当调用<code>make-standard-class</code>程序。唯一困难的部分是给定的属性字段的值。由于一个类必须包括它的父类的属性，因此不能只有<code>create-class</code>提供的属性参数。我们必须把所给的属性追加到父类的属性中，并保证没有重复的属性。</p>
+<pre><code class="lang-scheme">(define create-class-proc
+  (lambda (superclass slots method-names method-vector)
+    (make-standard-class
+     'superclass superclass
+     'slots
+     (let ((superclass-slots 
+            (if (not (eqv? superclass #t))
+                (standard-class.slots superclass)
+                '())))
+       (if (null? superclass-slots) slots
+           (delete-duplicates
+            (append slots superclass-slots))))
+     'method-names method-names
+     'method-vector method-vector)))
+</code></pre>
+<p>过程<code>delete-duplicates</code>接受一个列表<code>s</code>为参数，返回一个新列表，该列表只包含<code>s</code>中每个元素的最后一次出现。</p>
+<pre><code class="lang-scheme">(define delete-duplicates
+  (lambda (s)
+    (if (null? s) s
+        (let ((a (car s)) (d (cdr s)))
+          (if (memv a d) (delete-duplicates d)
+              (cons a (delete-duplicates d)))))))
+</code></pre>
+<p>现在谈谈方法的应用。我们通过使用<code>send</code>程序调用一个类实例的方法。<code>send</code>的参数是方法的名字，紧接着是类实例，以及除了类实例本身之外的该方法的其他参数。由于方法储存在实例的类中而不是在实例本身中，因此<code>send</code>会在该实例对于的类中寻找该方法。如果没有找到，则到父类中寻找，如此直到找完整个继承链：</p>
+<pre><code class="lang-scheme">(define send
+  (lambda (method instance . args)
+    (let ((proc
+           (let loop ((class (class-of instance)))
+             (if (eqv? class #t) (error 'send)
+                 (let ((k (list-position 
+                           method
+                           (standard-class.method-names class))))
+                   (if k
+                       (vector-ref (standard-class.method-vector class) k)
+                       (loop (standard-class.superclass class))))))))
+      (apply proc instance args))))
+</code></pre>
+<p>我们现在可以定义一些更有趣的类了：</p>
+<pre><code class="lang-scheme">(define bike-class
+  (create-class
+   #t
+   (frame size parts chain tires)
+   (check-fit (lambda (me inseam)
+                (let ((bike-size (slot-value me 'size))
+                      (ideal-size (* inseam 3/5)))
+                  (let ((diff (- bike-size ideal-size)))
+                    (cond ((<= -1 diff 1) 'perfect-fit)
+                          ((<= -2 diff 2) 'fits-well)
+                          ((< diff -2) 'too-small)
+                          ((> diff 2) 'too-big))))))))
+</code></pre>
+<p>这里，<code>bike-class</code>包括一个名为<code>check-fit</code>的方法，它接受一个自行车的实例和一个裤腿的尺寸作为参数，并报告该车对这种裤腿尺寸的人的适应性。</p>
+<p>我们再来定义<code>my-bike</code>：</p>
+<pre><code class="lang-scheme">(define my-bike
+  (make-instance bike-class
+                 'frame 'titanium ; I wish
+                 'size 21
+                 'parts 'ultegra
+                 'chain 'sachs
+                 'tires 'continental))
+</code></pre>
+<p>检查这个车与裤腿尺寸为32的某个人是否搭配：</p>
+<pre><code class="lang-scheme">(send 'check-fit my-bike 32)
+</code></pre>
+<p>我们再定义子类<code>bike-class</code>。</p>
+<pre><code class="lang-scheme">(define mtn-bike-class
+  (create-class
+    bike-class
+    (suspension)
+    (check-fit (lambda (me inseam)
+                (let ((bike-size (slot-value me 'size))
+                      (ideal-size (- (* inseam 3/5) 2)))
+                  (let ((diff (- bike-size ideal-size)))
+                    (cond ((<= -2 diff 2) 'perfect-fit)
+                          ((<= -4 diff 4) 'fits-well)
+                          ((< diff -4) 'too-small)
+                          ((> diff 4) 'too-big))))))))
+</code></pre>
+<p><code>Mtn-bike-class</code>添加了一个名为<code>suspension</code>的属性。并定义了一个稍微不同的名为<code>check-fit</code>的方法。</p>
+<h2 id="12-2-">12.2 类也是实例</h2>
+<p>到这里为止，精明的读者可能已经发现了：类本身可以是某些其他类（如“元类”）的实例。注意所有类都有一些相同的特点：每个都有属性、父类、方法名称的列表和包含方法体的向量。<code>make-instance</code>看起来像是他们所共享的方法。这意味着我们可以通过另一个类（当然也是某个类的实例啦）来指定这些共同的特点。</p>
+<p>具体的说就是我们可以重写我们的类实现并实现其自身（好别扭）。使用面向对象的方法，这样我们可以确保不会遇到鸡生蛋，蛋生鸡的问题。这样我们会跳出<code>class</code>结构和它相关的过程并余下的方法来把类定义为对象。</p>
+<p>我们现在把<code>standard-class</code>作为其他类的父类。特别的，<code>standard-class</code>必须是它自己的一个实例。那么<code>standard-class</code>应该是什么样子的呢？</p>
+<p>我们知道<code>standard-class</code>是一个实例，而且我们用一个向量来表示这个实例。所以最终是一个向量，其第一个元素是它的父类，也就是它自己，而余下的元素是属性值。我们已经确定有四个所有类都必须有的属性，因此<code>standard-class</code>是一个5个元素的向量。</p>
+<pre><code class="lang-scheme">(define standard-class
+  (vector 'value-of-standard-class-goes-here
+          (list 'slots
+                'superclass
+                'method-names
+                'method-vector)
+          #t
+          '(make-instance)
+          (vector make-instance)))
+</code></pre>
+<p>注意到<code>standard-class</code>这个向量并没有被完全填充：符号<code>value‑of‑standard‑class‑goes‑here</code>此时仅仅做占位用。现在我们已经定义了一个<code>standard-class</code>的值，现在我们可以用它来确定它自己的类，即它本身。</p>
+<pre><code class="lang-scheme">(vector-set! standard-class 0 standard-class)
+</code></pre>
+<p>注意我们不能用<code>class</code>结构提供的过程了。我们必须把下面的形式：</p>
+<pre><code class="lang-scheme">(standard-class? x)
+(standard-class.slots c)
+(standard-class.superclass c)
+(standard-class.method-names c)
+(standard-class.method-vector c)
+(make-standard-class ...)
+</code></pre>
+<p>换成：</p>
+<pre><code class="lang-scheme">(and (vector? x) (eqv? (vector-ref x 0) standard-class))
+(vector-ref c 1)
+(vector-ref c 2)
+(vector-ref c 3)
+(vector-ref c 4)
+(send 'make-instance standard-class ...)
+</code></pre>
+<h2 id="12-3-">12.3 多重继承</h2>
+<p>我们可以容易的修改这个对象系统使类可以有一个以上的父类。我们重新定义<code>standard‑class</code>来添加一个属性叫<code>class‑precedence‑list</code>取代<code>superclass</code>，一个类的<code>class‑precedence‑list</code>是它所有父类的列表，而不只有通过<code>create-class</code>创建时指定的“直接”的父类。从这个名字可以看出其超类是以一种特定的顺序来存放的，前面的超类有比后面超类更高的优先级。</p>
+<pre><code class="lang-scheme">(define standard-class
+  (vector 'value-of-standard-class-goes-here
+          (list 'slots 'class-precedence-list 'method-names 'method-vector)
+          '()
+          '(make-instance)
+          (vector make-instance)))
+</code></pre>
+<p>不仅属性列表改变来存放新的属性，而且<code>superclass</code>属性也从<code>#t</code>变为<code>()</code>，这是因为<code>standard‑class</code>的<code>class‑precedence‑list</code>必须是一个列表。我们可以令它的值为<code>(#t)</code>，但是我们不会提到元类，由于它在每个类的<code>class‑precedence‑list</code>中。</p>
+<p>宏<code>create-class</code>也需要修改来接受一个超类的列表而不是一个单独的超类。</p>
+<pre><code class="lang-scheme">(define-macro create-class
+  (lambda (direct-superclasses slots . methods)
+    `(create-class-proc
+      (list ,@(map (lambda (su) `,su) direct-superclasses))
+      (list ,@(map (lambda (slot) `',slot) slots))
+      (list ,@(map (lambda (method) `',(car method)) methods))
+      (vector ,@(map (lambda (method) `,(cadr method)) methods))
+      )))
+</code></pre>
+<p><code>create‑class‑proc</code>必须根据提供的超类给出类的优先级列表，并根据优先级给出属性列表：</p>
+<pre><code class="lang-scheme">(define create-class-proc
+  (lambda (direct-superclasses slots method-names method-vector)
+    (let ((class-precedence-list
+           (delete-duplicates
+            (append-map
+             (lambda (c) (vector-ref c 2))
+             direct-superclasses))))
+      (send 'make-instance standard-class
+            'class-precedence-list class-precedence-list
+            'slots
+            (delete-duplicates
+             (append slots (append-map
+                            (lambda (c) (vector-ref c 1))
+                            class-precedence-list)))
+            'method-names method-names
+            'method-vector method-vector))))
+</code></pre>
+<p>过程<code>append-map</code>是一个<code>append</code>和<code>map</code>的组合：</p>
+<pre><code class="lang-scheme">(define append-map
+  (lambda (f s)
+    (let loop ((s s))
+      (if (null? s) '()
+          (append (f (car s))
+                  (loop (cdr s)))))))
+</code></pre>
+<p>过程<code>send</code>在寻找一个方法时必须从左到右搜索类的优先级列表：</p>
+<pre><code class="lang-scheme">(define send
+  (lambda (method-name instance . args)
+    (let ((proc
+           (let ((class (class-of instance)))
+             (if (eqv? class #t) (error 'send)
+                 (let loop ((class class)
+                            (superclasses (vector-ref class 2)))
+                   (let ((k (list-position 
+                             method-name
+                             (vector-ref class 3))))
+                     (cond (k (vector-ref 
+                               (vector-ref class 4) k))
+                           ((null? superclasses) (error 'send))
+                           (else (loop (car superclasses)
+                                       (cdr superclasses))))
+                     ))))))
+      (apply proc instance args))))
+</code></pre>
+<hr>
+<p><a name="foot-note-1" href="#1"><b>1</b></a>理论上我们可以把方法也定义为属性（值为一个过程），但是有很多理由不这样做，类的实例共享方法但是通常有不同的属性值。也就是说，方法可以包括在类定义中，而且不需要每次实例化时都进行设置——就像属性那样。</p>
+
+  </body>
+</html>

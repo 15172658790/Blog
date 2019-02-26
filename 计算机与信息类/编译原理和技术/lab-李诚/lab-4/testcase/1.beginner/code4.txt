@@ -1,0 +1,9 @@
+var i, j;
+begin
+  i := 1;
+  j := 2;
+  j := i + j;
+  i := j + i;
+  print i;
+  print j;
+end.

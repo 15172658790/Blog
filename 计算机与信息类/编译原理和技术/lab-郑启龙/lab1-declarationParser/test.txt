@@ -1,0 +1,11 @@
+int *p,q,j[2];
+int *p[2][3];
+int (*p[4])[2];
+int (*f(int i,void *j))[2];
+int f(void i, void j, int p[2]);
+//wrong
+int *f(int i)[2];
+int f[2](int k);
+void (*(*paa)[10])(int a);
+int (*(*(*pg())(int x))[20])(int *y);
+int (*p(int * s,int (*t)(int *m, int n, int (*l())[20]),int k[10]))[10][20]; 

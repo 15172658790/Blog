@@ -1,0 +1,11 @@
+var i;
+procedure p;
+begin
+  i := 2;
+end;
+
+begin
+  i := 1;
+  call p;
+  print i;
+end.

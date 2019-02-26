@@ -1,0 +1,9 @@
+const a = 3;
+var b, c;
+begin
+  b := 3;
+  c := 0;
+  if a >= b && (! a < (b - 1)) || a * 3 = 5 then c := c + 1;
+  if !(b >= 3) || (c + a < a * 2) then c := c + 2;
+  print c;
+end.
