@@ -4,7 +4,7 @@
 [![Forks](https://img.shields.io/github/forks/mbinary/USTC-CS-Courses-Resource.svg?label=Fork&style=social)](https://github.com/mbinary/USTC-CS-Courses-Resource/network/members)
 [![repo-size](https://img.shields.io/github/repo-size/mbinary/USTC-CS-Courses-Resource.svg)]()
 [![Contributors](https://img.shields.io/github/contributors/mbinary/USTC-CS-Courses-Resource.svg)](https://github.com/mbinary/USTC-CS-Courses-Resource/graphs/contributors)
-[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/80x22.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 >本仓库收录中国科学技术大学众多课程资源，包括电子版教材、参考书、讲义、试卷、学习心得、习题解答等。以计算机学院课程为主，也包含公选课、自由选修等其他课程。
 
