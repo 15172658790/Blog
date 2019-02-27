@@ -177,7 +177,7 @@ echo "计算机与信息类/软件工程"  >> .git/info/sparse-checkout  #这里
 git pull origin master
 git remote add upstream git@github.com:mbinary/USTC-CS-Courses-Resource.git
 ```
-更新内容后
+更新内容后 
 ```shell
 git fetch upstream/master
 git merge upstream/master
